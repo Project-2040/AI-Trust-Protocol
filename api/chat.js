@@ -4,15 +4,17 @@ export default async function handler(req, res) {
     const { message } = req.body;
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey) return res.status(500).json({ response: "ERROR: API KEY NOT FOUND." });
+    if (!apiKey) return res.status(500).json({ response: "SYSTEM: API KEY NOT CONFIGURED." });
 
     try {
-        // একদম বেসিক gemini-pro মডেল ব্যবহার করছি যা v1 এ সবসময় থাকে
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`, {
+        // একদম ডাইরেক্ট এন্ডপয়েন্ট এবং মডেল পাথ
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: message }] }]
+                contents: [{
+                    parts: [{ text: message }]
+                }]
             })
         });
 
@@ -22,10 +24,11 @@ export default async function handler(req, res) {
             const aiResponse = data.candidates[0].content.parts[0].text;
             res.status(200).json({ response: aiResponse });
         } else {
-            const errorMsg = data.error ? data.error.message : "EMPTY_RESPONSE";
-            res.status(500).json({ response: "AXIOM SYSTEM: " + errorMsg });
+            // বিস্তারিত এরর মেসেজ যাতে আমরা বুঝতে পারি সমস্যা কোথায়
+            const errorMsg = data.error ? `${data.error.message} (Code: ${data.error.code})` : "NO RESPONSE";
+            res.status(500).json({ response: "AXIOM CORE ERROR: " + errorMsg });
         }
     } catch (error) {
-        res.status(500).json({ response: "CRITICAL SYNC ERROR." });
+        res.status(500).json({ response: "NETWORK SYNC FAILED." });
     }
 }
