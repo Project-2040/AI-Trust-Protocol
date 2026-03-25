@@ -7,12 +7,12 @@ export default async function handler(req, res) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-        return res.status(500).json({ response: "ERROR: API KEY NOT FOUND." });
+        return res.status(500).json({ response: "ERROR: API KEY MISSING IN VERCEL." });
     }
 
     try {
-        // মডেলের নাম একদম ছোট হাতের অক্ষরে (gemini-1.5-flash)
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        // এই URL-টি সবচাইতে লেটেস্ট এবং স্ট্যাবল (v1beta)
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -26,11 +26,11 @@ export default async function handler(req, res) {
             const aiResponse = data.candidates[0].content.parts[0].text;
             res.status(200).json({ response: aiResponse });
         } else {
-            // যদি কোনো কারণে এরর আসে সেটি এখানে দেখাবে
-            const errorMsg = data.error ? data.error.message : "AI CORE BUSY. TRY AGAIN.";
-            res.status(500).json({ response: "GOOGLE AI: " + errorMsg });
+            // যদি গুগল কোনো নির্দিষ্ট এরর দেয় তা এখানে দেখাবে
+            const errorDetail = data.error ? data.error.message : "MODEL SYNC ERROR";
+            res.status(500).json({ response: "SYSTEM: " + errorDetail });
         }
     } catch (error) {
-        res.status(500).json({ response: "CONNECTION FAILED." });
+        res.status(500).json({ response: "CONNECTION FAILED. RETRYING..." });
     }
 }
