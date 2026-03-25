@@ -18,7 +18,7 @@
 
     <nav class="w-full max-w-7xl flex justify-between items-center py-6 opacity-80 uppercase font-black italic">
         <div>AXIOM<span class="text-cyan-400">CHAIN</span></div>
-        <div class="text-[10px] text-cyan-400 border border-cyan-500/30 px-3 py-1 rounded-full">MD. SARIFUL SHEIKH JENON</div>
+        <div class="text-[10px] text-cyan-400 border border-cyan-500/30 px-3 py-1 rounded-full uppercase tracking-widest">MD. SARIFUL SHEIKH JENON</div>
     </nav>
 
     <main class="flex-1 flex flex-col items-center justify-center w-full max-w-2xl">
@@ -27,7 +27,7 @@
         </h1>
 
         <div id="chat-window" class="w-full glass min-h-[300px] max-h-[450px] overflow-y-auto p-6 rounded-3xl mb-6 flex flex-col gap-4 border-cyan-500/10 shadow-2xl">
-            <p class="text-cyan-400 font-mono text-[10px] opacity-60 italic text-center border-b border-white/5 pb-2 uppercase">Protocol Online: Node 0.0.8375963</p>
+            <p class="text-cyan-400 font-mono text-[10px] opacity-60 italic text-center border-b border-white/5 pb-2 uppercase tracking-[0.2em]">Protocol Online: Node 0.0.8375963</p>
         </div>
 
         <div class="w-full relative">
@@ -42,31 +42,13 @@
         const inputField = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
 
-        async function askAI() {
-            const query = inputField.value.trim();
-            if (!query) return;
-
-            addMessage(`YOU: ${query}`, "text-white/60 text-right pr-3 border-r-2 border-white/10");
-            inputField.value = "";
-            sendBtn.innerText = "WAIT...";
-            sendBtn.disabled = true;
-
-            const aiMsgRef = addMessage("> INITIALIZING CORE RESPONSE...", "text-cyan-400 animate-pulse uppercase");
-
-            try {
-                // এখানে আমরা আপনার সেট করা পার্সোনালাইজড রেসপন্স এবং এআই লজিক সেট করছি
-                setTimeout(() => {
-                    let responseText = generateResponse(query);
-                    aiMsgRef.innerText = "> AXIOM AI: " + responseText;
-                    aiMsgRef.classList.remove("animate-pulse");
-                    sendBtn.innerText = "EXECUTE";
-                    sendBtn.disabled = false;
-                    chatWindow.scrollTop = chatWindow.scrollHeight;
-                }, 1000);
-            } catch (error) {
-                aiMsgRef.innerText = "> ERROR: PROTOCOL TIMEOUT.";
-                sendBtn.disabled = false;
-            }
+        function addMessage(text, className) {
+            const msg = document.createElement('p');
+            msg.className = `text-[11px] font-mono leading-relaxed uppercase ${className}`;
+            msg.innerText = text;
+            chatWindow.appendChild(msg);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return msg;
         }
 
         function generateResponse(q) {
@@ -76,20 +58,32 @@
             if (input.includes("date") || input.includes("time")) return `CURRENT SYSTEM STAMP: ${new Date().toLocaleString()}`;
             if (input.includes("vision")) return "VISION 2040: ESTABLISHING DECENTRALIZED TRUST THROUGH IMMUTABLE AI-LEDGER INTEGRATION.";
             
-            return `COMMAND "${q.toUpperCase()}" ANALYZED. NO DISCREPANCIES FOUND IN THE LEDGER.`;
+            return `COMMAND "${q.toUpperCase()}" ANALYZED. DATA SYNCHRONIZED WITH HEDERA LEDGER. NO ERRORS.`;
         }
 
-        function addMessage(text, className) {
-            const msg = document.createElement('p');
-            msg.className = `text-xs font-mono leading-relaxed ${className}`;
-            msg.innerText = text;
-            chatWindow.appendChild(msg);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-            return msg;
+        async function askAI() {
+            const query = inputField.value.trim();
+            if (!query) return;
+
+            addMessage(`YOU: ${query}`, "text-white/60 text-right pr-3 border-r-2 border-white/10");
+            inputField.value = "";
+            sendBtn.innerText = "WAIT...";
+            sendBtn.disabled = true;
+
+            const aiMsgRef = addMessage("> INITIALIZING CORE RESPONSE...", "text-cyan-400 animate-pulse tracking-widest");
+
+            setTimeout(() => {
+                const responseText = generateResponse(query);
+                aiMsgRef.innerText = "> AXIOM AI: " + responseText;
+                aiMsgRef.classList.remove("animate-pulse");
+                sendBtn.innerText = "EXECUTE";
+                sendBtn.disabled = false;
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }, 800);
         }
 
-        sendBtn.onclick = askAI;
-        inputField.onkeypress = (e) => { if (e.key === 'Enter') askAI(); };
-    </p>
+        sendBtn.addEventListener('click', askAI);
+        inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') askAI(); });
+    </script>
 </body>
 </html>
