@@ -7,12 +7,12 @@ export default async function handler(req, res) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-        return res.status(500).json({ response: "ERROR: API KEY MISSING." });
+        return res.status(500).json({ response: "ERROR: API KEY NOT FOUND." });
     }
 
     try {
-        // সবচাইতে স্ট্যাবল মডেল gemini-pro ব্যবহার করা হয়েছে
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+        // মডেল হিসেবে gemini-1.5-flash এবং v1beta এন্ডপয়েন্ট ব্যবহার করা হয়েছে
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -26,10 +26,11 @@ export default async function handler(req, res) {
             const aiResponse = data.candidates[0].content.parts[0].text;
             res.status(200).json({ response: aiResponse });
         } else {
-            const errorDetail = data.error ? data.error.message : "AI CORE SYNC ERROR";
-            res.status(500).json({ response: "SYSTEM: " + errorDetail });
+            // বিস্তারিত এরর মেসেজ দেখাবে যাতে আপনি বুঝতে পারেন সমস্যা কোথায়
+            const errorMsg = data.error ? data.error.message : "AI CORE IS SYNCING, PLEASE RETRY.";
+            res.status(500).json({ response: "SYSTEM: " + errorMsg });
         }
     } catch (error) {
-        res.status(500).json({ response: "CONNECTION FAILED." });
+        res.status(500).json({ response: "CORE SYNCHRONIZATION FAILED." });
     }
 }
