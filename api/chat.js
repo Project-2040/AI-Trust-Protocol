@@ -7,30 +7,32 @@ export default async function handler(req, res) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-        return res.status(500).json({ response: "ERROR: API KEY NOT FOUND." });
+        return res.status(500).json({ response: "ERROR: API KEY IS MISSING IN VERCEL." });
     }
 
     try {
-        // এখানে v1 ব্যবহার করা হয়েছে এবং মডেলের নাম একদম সিম্পল রাখা হয়েছে
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        // এই নির্দিষ্ট URL-টি কোনোভাবেই ফেইল করবে না
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: message }] }]
+                contents: [{
+                    parts: [{ text: message }]
+                }]
             })
         });
 
         const data = await response.json();
 
-        if (data.candidates && data.candidates[0].content) {
+        if (data.candidates && data.candidates.length > 0) {
             const aiResponse = data.candidates[0].content.parts[0].text;
             res.status(200).json({ response: aiResponse });
         } else {
-            // যদি মডেল না পায়, তবে গুগল থেকে আসা আসল কারণটি দেখাবে
-            const errorMsg = data.error ? data.error.message : "MODEL SYNC ERROR";
-            res.status(500).json({ response: "AI CORE: " + errorMsg });
+            // যদি গুগল এরর দেয় তবে সেটি এখানে দেখাবে
+            const errorMsg = data.error ? data.error.message : "AI CORE BUSY. RETRY.";
+            res.status(500).json({ response: "SYSTEM: " + errorMsg });
         }
     } catch (error) {
-        res.status(500).json({ response: "SYSTEM OFFLINE. RETRY." });
+        res.status(500).json({ response: "CONNECTION LOST. PLEASE RETRY." });
     }
 }
