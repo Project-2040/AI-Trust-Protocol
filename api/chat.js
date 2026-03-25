@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        // মডেলের নাম এখানে ছোট হাতের অক্ষরে এবং v1beta এর বদলে v1 ব্যবহার করা হয়েছে
+        // এখানে v1beta এর বদলে v1 ব্যবহার করা হয়েছে
         const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
