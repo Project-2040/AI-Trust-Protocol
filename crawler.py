@@ -1,36 +1,35 @@
 import requests
-import random
+from bs4 import BeautifulSoup
 from supabase import create_client
+import random
 
-# Supabase Setup
+# Supabase Credentials
 URL = "https://dmfpnkyiqybzfpzwnvtc.supabase.co"
 KEY = "sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC"
 supabase = create_client(URL, KEY)
 
 def sync_data():
-    print("--- 🚀 STARTING FORCE SYNC ---")
+    print("🚀 Syncing High-Result Data...")
     try:
-        # RSS সোর্স থেকে ডাটা আনা
-        res = requests.get("https://www.futurepedia.io/rss.xml", timeout=10)
-        from bs4 import BeautifulSoup
+        # RSS feed is the most stable source for bots
+        res = requests.get("https://www.futurepedia.io/rss.xml", timeout=15)
         soup = BeautifulSoup(res.content, 'xml')
-        items = soup.find_all('item', limit=3)
+        items = soup.find_all('item', limit=10)
         
         for item in items:
             name = item.title.text.strip()
-            print(f"Found: {name}")
-            payload = {
+            data = {
                 "name": name,
                 "category": "High Quality",
-                "trust_scor": 9.2,
-                "safety_ind": 95,
+                "trust_scor": round(random.uniform(8.5, 9.8), 1),
+                "safety_ind": random.randint(90, 99),
                 "url": item.link.text.strip()
             }
-            supabase.table("ai_agents").insert(payload).execute()
-            print(f"✅ Saved: {name}")
+            supabase.table("ai_agents").insert(data).execute()
+            print(f"✅ Synced: {name}")
             
     except Exception as e:
-        print(f"❌ Error Detail: {str(e)}")
+        print(f"❌ Error: {str(e)}")
 
 if __name__ == "__main__":
     sync_data()
