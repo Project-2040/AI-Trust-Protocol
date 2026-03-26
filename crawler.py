@@ -2,58 +2,50 @@ import requests
 from bs4 import BeautifulSoup
 from supabase import create_client
 import random
-import sys
+import os
 
-# সুপাবেস ক্রেডেনশিয়াল
-url = "https://dmfpnkyiqybzfpzwnvtc.supabase.co"
-key = "sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC"
-supabase = create_client(url, key)
+# আপনার সুপাবেস তথ্য
+URL = "https://dmfpnkyiqybzfpzwnvtc.supabase.co"
+KEY = "sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC"
+supabase = create_client(URL, KEY)
 
 def start_crawling():
-    # সরাসরি RSS Feed ব্যবহার (এটি ব্লক হওয়া কঠিন)
-    feed_url = "https://www.futurepedia.io/rss.xml" 
-    print(f"Connecting to: {feed_url}...")
-
+    # সরাসরি একটি সহজ সোর্স ব্যবহার করছি যা ব্লক হয় না
+    target_url = "https://www.futurepedia.io/rss.xml" 
+    print("Fetching data from RSS...")
+    
     try:
-        response = requests.get(feed_url, timeout=20)
-        print(f"Response Status: {response.status_code}")
-        
-        if response.status_code != 200:
-            print("Failed to fetch data from source.")
-            return
-
+        response = requests.get(target_url, timeout=20)
         soup = BeautifulSoup(response.content, 'xml')
         items = soup.find_all('item', limit=5)
-        print(f"Found {len(items)} potential items.")
+        
+        if not items:
+            print("No items found in RSS.")
+            return
 
-        added_count = 0
         for item in items:
             name = item.title.text.strip()
             link = item.link.text.strip()
             
-            # ডাটাবেজে চেক করা
-            print(f"Checking: {name}...")
+            # নাম অলরেডি আছে কি না চেক
             check = supabase.table("ai_agents").select("name").eq("name", name).execute()
             
-            if not check.data:
+            if len(check.data) == 0:
                 data = {
                     "name": name,
-                    "category": "Automated",
+                    "category": "AI Tool",
                     "trust_scor": round(random.uniform(7.5, 9.8), 1),
                     "safety_ind": random.randint(80, 99),
                     "url": link
                 }
-                # ডাটাবেজে পুশ করা
-                response_db = supabase.table("ai_agents").insert(data).execute()
-                print(f"Inserted: {name}")
-                added_count += 1
+                # ডেটা ইনসার্ট
+                supabase.table("ai_agents").insert(data).execute()
+                print(f"Added Successfully: {name}")
             else:
-                print(f"Skipped (Already Exists): {name}")
-        
-        print(f"Total new items added: {added_count}")
+                print(f"Skipped (Exists): {name}")
 
     except Exception as e:
-        print(f"Critical Error: {str(e)}")
+        print(f"Error occurred: {e}")
 
 if __name__ == "__main__":
     start_crawling()
