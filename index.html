@@ -24,7 +24,6 @@
         .btn-visit { display: block; width: 100%; padding: 10px; margin-top: 15px; background: transparent; border: 1px solid #444; color: #fff; text-align: center; text-decoration: none; border-radius: 6px; font-size: 0.9em; transition: 0.3s; }
         .btn-visit:hover { background: var(--neon); color: #000; font-weight: bold; }
         #loader { text-align: center; padding: 50px; color: var(--neon); font-size: 1.2em; }
-        footer { margin-top: 100px; padding: 40px; border-top: 1px solid #1a1a1a; text-align: center; color: #555; font-size: 0.8em; }
     </style>
 </head>
 <body>
@@ -38,25 +37,19 @@
         <h1>AI Reputation Engine <span style="font-size: 0.4em; opacity: 0.5;">v2.0.40</span></h1>
         <p>The Global Benchmark for Autonomous Agent Verification.</p>
     </div>
-    <div id="loader">CONNECTING TO QUANTUM DATABASE...</div>
+    <div id="loader">CONNECTING TO SUPABASE...</div>
     <div class="grid" id="agent-grid"></div>
 </div>
 
-<footer>
-    <p>© 2026-2040 AXIOMCHAIN | PROTOCOL SECURED</p>
-</footer>
-
 <script>
-    // আপনার সঠিক Credentials
     const SUPABASE_URL = 'https://dmfpnkyiqbzfpzwnvtc.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function fetchAgents() {
         try {
-            // ডাটাবেজ থেকে তথ্য আনা
             const { data, error } = await _supabase
-                .from('ai_agents') 
+                .from('ai_agents')
                 .select('*');
 
             if (error) throw error;
@@ -64,38 +57,27 @@
             const grid = document.getElementById('agent-grid');
             document.getElementById('loader').style.display = 'none';
 
-            // যদি ডেটা না থাকে
             if (!data || data.length === 0) {
-                grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1; color: #f00;'>NO DATA FOUND: Please add a row in Supabase Table Editor.</p>";
+                grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1;'>No data found in 'ai_agents' table.</p>";
                 return;
             }
 
-            // ডেটা কার্ড তৈরি (বড় হাতের এবং ছোট হাতের উভয় কলাম সাপোর্ট করবে)
-            grid.innerHTML = data.map(agent => {
-                const name = agent.Name || agent.name || 'Unknown';
-                const score = agent.Trust_Score || agent.trust_score || '0';
-                const category = agent.Category || agent.category || 'AI Agent';
-                const safety = agent.Safety_Index || agent.safety_index || '0';
-                const url = agent.url || agent.URL || '#';
-
-                return `
-                    <div class="card">
-                        <div class="score-circle">${score}</div>
-                        <h3>${name}</h3>
-                        <span class="badge">${category}</span>
-                        <span class="badge">VERIFIED</span>
-                        
-                        <div class="stat-label"><span>Safety Index</span><span>${safety}%</span></div>
-                        <div class="stat-bar"><div class="stat-fill" style="width: ${safety}%"></div></div>
-                        
-                        <a href="${url}" target="_blank" class="btn-visit">View Protocol</a>
-                    </div>
-                `;
-            }).join('');
-
+            grid.innerHTML = data.map(agent => `
+                <div class="card">
+                    <div class="score-circle">${agent.trust_score || '0'}</div>
+                    <h3>${agent.name || 'Unnamed Agent'}</h3>
+                    <span class="badge">${agent.category || 'AI Tool'}</span>
+                    <span class="badge">SECURED</span>
+                    
+                    <div class="stat-label"><span>Safety Index</span><span>${agent.safety_index || '0'}%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: ${agent.safety_index || '0'}%"></div></div>
+                    
+                    <a href="${agent.url || '#'}" target="_blank" class="btn-visit">Access Protocol</a>
+                </div>
+            `).join('');
         } catch (err) {
-            console.error("Error:", err);
-            document.getElementById('loader').innerHTML = "<span style='color:red'>CONNECTION ERROR: Check RLS or Table Name.</span>";
+            console.error("System Error:", err);
+            document.getElementById('loader').innerHTML = "<span style='color:red'>DATA LOAD ERROR: CHECK TABLE COLUMNS.</span>";
         }
     }
 
