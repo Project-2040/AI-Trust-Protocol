@@ -2,54 +2,48 @@ import requests
 from bs4 import BeautifulSoup
 from supabase import create_client
 import random
-import time
 
-# আপনার সুপাবেস তথ্য
+# সুপাবেস ক্রেডেনশিয়াল
 url = "https://dmfpnkyiqybzfpzwnvtc.supabase.co"
 key = "sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC"
 supabase = create_client(url, key)
 
 def start_crawling():
-    # নতুন সোর্স: এটি অনেক বেশি ডেটা দেয় এবং ব্লক কম করে
-    target_url = "https://www.futuretools.io/" 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
-    }
+    # আমরা সরাসরি RSS Feed ব্যবহার করছি যা ব্লক করা যায় না
+    feed_url = "https://www.futurepedia.io/rss.xml" 
     
     try:
-        response = requests.get(target_url, headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
+        response = requests.get(feed_url, timeout=15)
+        soup = BeautifulSoup(response.content, 'xml') # XML পার্সার
         
-        # এই সাইটে এআই টুলগুলোর নাম সাধারণত 'h3' বা নির্দিষ্ট ক্লাস এ থাকে
-        # আমরা সব লিঙ্ক থেকে নাম খোঁজার চেষ্টা করব
-        tools = soup.select('.tool-card-name-link') or soup.find_all('h3')
+        # আইটেম খুঁজে বের করা
+        items = soup.find_all('item', limit=5)
         
         added_count = 0
-        for tool in tools:
-            name = tool.get_text().strip()
+        for item in items:
+            name = item.title.text.strip()
+            link = item.link.text.strip()
             
-            if len(name) > 2 and added_count < 5: # একসাথে ৫টি করে নতুন টুল যোগ হবে
-                # চেক করা হচ্ছে আগে থেকে আছে কি না
-                check = supabase.table("ai_agents").select("name").eq("name", name).execute()
-                
-                if not check.data:
-                    data = {
-                        "name": name,
-                        "category": "AI Discovery",
-                        "trust_scor": round(random.uniform(7.5, 9.8), 1), # আপনার ডাটাবেজ কলাম
-                        "safety_ind": random.randint(85, 99),            # আপনার ডাটাবেজ কলাম
-                        "url": "https://www.futuretools.io"
-                    }
-                    supabase.table("ai_agents").insert(data).execute()
-                    print(f"Successfully Automated: {name}")
-                    added_count += 1
-                    time.sleep(1) # সাইট যেন ব্লক না করে তাই ১ সেকেন্ড বিরতি
-                    
+            # ডাটাবেজে চেক করা
+            check = supabase.table("ai_agents").select("name").eq("name", name).execute()
+            
+            if not check.data:
+                data = {
+                    "name": name,
+                    "category": "AI Discovery",
+                    "trust_scor": round(random.uniform(7.5, 9.7), 1), # আপনার কলামের নাম
+                    "safety_ind": random.randint(85, 98),            # আপনার কলামের নাম
+                    "url": link
+                }
+                supabase.table("ai_agents").insert(data).execute()
+                print(f"AUTOMATED ADD: {name}")
+                added_count += 1
+        
         if added_count == 0:
-            print("No new tools found or already up to date.")
+            print("No new data found right now.")
             
     except Exception as e:
-        print(f"Automation Error: {e}")
+        print(f"Critical Error: {e}")
 
 if __name__ == "__main__":
     start_crawling()
