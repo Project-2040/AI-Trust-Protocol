@@ -4,43 +4,36 @@ from supabase import create_client
 import random
 
 # আপনার সুপাবেস তথ্য
-URL = "https://dmfpnkyiqybzfpzwnvtc.supabase.co"
-KEY = "sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC"
-supabase = create_client(URL, KEY)
+url = "https://dmfpnkyiqybzfpzwnvtc.supabase.co"
+key = "sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC"
+supabase = create_client(url, key)
 
 def start_crawling():
-    # সরাসরি RSS Feed ব্যবহার (এটি ব্লক করা কঠিন)
+    # RSS Feed ব্যবহার করছি
     feed_url = "https://www.futurepedia.io/rss.xml" 
-    print("Connecting to RSS...")
     
     try:
-        response = requests.get(feed_url, timeout=20)
-        # 'html.parser' ব্যবহার করছি যাতে lxml এর ঝামেলা না থাকে
-        soup = BeautifulSoup(response.content, 'html.parser') 
-        items = soup.find_all('item')
+        response = requests.get(feed_url, timeout=15)
+        soup = BeautifulSoup(response.content, 'xml') 
+        items = soup.find_all('item', limit=5)
         
-        print(f"Found {len(items)} items.")
-        added = 0
-
-        for item in items[:5]: # প্রথম ৫টি এআই টুল
+        for item in items:
             name = item.title.text.strip()
-            # ডাটাবেজে আগে থেকে আছে কি না চেক
+            link = item.link.text.strip()
+            
+            # ডাটাবেজে আগে থেকে আছে কি না চেক করা
             check = supabase.table("ai_agents").select("name").eq("name", name).execute()
             
             if not check.data:
                 data = {
                     "name": name,
                     "category": "AI Tool",
-                    "trust_scor": round(random.uniform(7.0, 9.5), 1),
-                    "safety_ind": random.randint(80, 99),
-                    "url": "https://www.futurepedia.io"
+                    "trust_scor": round(random.uniform(7.5, 9.8), 1), # বানান ঠিক আছে
+                    "safety_ind": random.randint(85, 99),            # বানান ঠিক আছে
+                    "url": link
                 }
                 supabase.table("ai_agents").insert(data).execute()
-                print(f"Done: {name}")
-                added += 1
-        
-        print(f"Total Added: {added}")
-
+                print(f"Added: {name}")
     except Exception as e:
         print(f"Error: {e}")
 
