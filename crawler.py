@@ -9,35 +9,37 @@ KEY = "sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC"
 supabase = create_client(URL, KEY)
 
 def start_crawling():
-    # সরাসরি RSS Feed ব্যবহার (এটি ব্লক হওয়া কঠিন)
+    # সরাসরি RSS Feed ব্যবহার (এটি ব্লক করা কঠিন)
     feed_url = "https://www.futurepedia.io/rss.xml" 
+    print("Connecting to RSS...")
     
     try:
         response = requests.get(feed_url, timeout=20)
-        soup = BeautifulSoup(response.content, 'xml')
-        items = soup.find_all('item', limit=5)
+        # 'html.parser' ব্যবহার করছি যাতে lxml এর ঝামেলা না থাকে
+        soup = BeautifulSoup(response.content, 'html.parser') 
+        items = soup.find_all('item')
         
-        for item in items:
+        print(f"Found {len(items)} items.")
+        added = 0
+
+        for item in items[:5]: # প্রথম ৫টি এআই টুল
             name = item.title.text.strip()
-            link = item.link.text.strip()
-            
-            # নাম অলরেডি আছে কি না চেক করা
+            # ডাটাবেজে আগে থেকে আছে কি না চেক
             check = supabase.table("ai_agents").select("name").eq("name", name).execute()
             
-            if len(check.data) == 0:
-                # সঠিক কলাম নামে ডেটা সাজানো (trust_scor এবং safety_ind)
+            if not check.data:
                 data = {
                     "name": name,
                     "category": "AI Tool",
-                    "trust_scor": round(random.uniform(7.5, 9.8), 1),
+                    "trust_scor": round(random.uniform(7.0, 9.5), 1),
                     "safety_ind": random.randint(80, 99),
-                    "url": link
+                    "url": "https://www.futurepedia.io"
                 }
-                # ডেটা ইনসার্ট করা
                 supabase.table("ai_agents").insert(data).execute()
-                print(f"Added Successfully: {name}")
-            else:
-                print(f"Skipped (Exists): {name}")
+                print(f"Done: {name}")
+                added += 1
+        
+        print(f"Total Added: {added}")
 
     except Exception as e:
         print(f"Error: {e}")
