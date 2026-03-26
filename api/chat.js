@@ -1,13 +1,12 @@
 export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
+    if (req.method !== 'POST') return res.status(405).send('Denied');
     const { message } = req.body;
+    
+    // আপনার স্ক্রিনশট থেকে পাওয়া এপিআই কী-র জন্য এই URL সবচাইতে পারফেক্ট
     const apiKey = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     try {
-        // এই URL-টি সরাসরি লেটেস্ট মডেলকে টার্গেট করবে যা সবার জন্য কাজ করে
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -21,11 +20,11 @@ export default async function handler(req, res) {
         if (response.ok && data.candidates) {
             res.status(200).json({ response: data.candidates[0].content.parts[0].text });
         } else {
-            // যদি মডেল না পায়, তবে সিস্টেমের আসল এরর মেসেজ পাঠাবে
-            const errorMsg = data.error ? data.error.message : "REACHED_LIMIT_OR_UNSUPPORTED_REGION";
-            res.status(500).json({ response: "AI_CORE_ERROR: " + errorMsg });
+            // যদি মডেল না পায়, তবে এই মেসেজটি দেখাবে
+            const errorReason = data.error ? data.error.message : "MODEL_NOT_READY";
+            res.status(500).json({ response: "AXIOM_REJECTED: " + errorReason });
         }
     } catch (err) {
-        res.status(500).json({ response: "CONNECTION_FAILED_TO_CORE" });
+        res.status(500).json({ response: "FATAL: CORE_SYNC_FAILED" });
     }
 }
