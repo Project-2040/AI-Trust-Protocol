@@ -1,0 +1,25 @@
+name: Daily AI Agent Crawler
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # প্রতিদিন রাত ১২টায় নিজে নিজে চলবে
+  workflow_dispatch: # চাইলে আপনি নিজেও বাটন টিপে রান করতে পারবেন
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 supabase
+
+      - name: Run Crawler
+        run: python crawler.py
