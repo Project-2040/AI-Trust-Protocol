@@ -1,25 +1,26 @@
-name: Daily AI Agent Crawler
+name: Pro AI Agent Crawler 0.1%
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 */12 * * *' # প্রতি ১২ ঘণ্টা অন্তর অটো আপডেট হবে
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4 # ভার্সন ৪ ব্যবহার করুন
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5 # ভার্সন ৫ ব্যবহার করুন
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install Pro Dependencies
         run: |
-          pip install -r requirements.txt
+          pip install playwright supabase
+          playwright install --with-deps chromium
 
-      - name: Run Crawler
+      - name: Execute High-Result Scraping
         run: python crawler.py
