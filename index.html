@@ -24,6 +24,7 @@
         .btn-visit { display: block; width: 100%; padding: 10px; margin-top: 15px; background: transparent; border: 1px solid #444; color: #fff; text-align: center; text-decoration: none; border-radius: 6px; font-size: 0.9em; transition: 0.3s; }
         .btn-visit:hover { background: var(--neon); color: #000; font-weight: bold; }
         #loader { text-align: center; padding: 50px; color: var(--neon); font-size: 1.2em; }
+        footer { margin-top: 80px; padding: 40px; text-align: center; color: #444; font-size: 0.8em; border-top: 1px solid #111; }
     </style>
 </head>
 <body>
@@ -37,17 +38,24 @@
         <h1>AI Reputation Engine <span style="font-size: 0.4em; opacity: 0.5;">v2.0.40</span></h1>
         <p>The Global Benchmark for Autonomous Agent Verification.</p>
     </div>
-    <div id="loader">CONNECTING TO SUPABASE...</div>
+    <div id="loader">ESTABLISHING SECURE CONNECTION...</div>
     <div class="grid" id="agent-grid"></div>
 </div>
 
+<footer>
+    <p>© 2026-2040 AXIOMCHAIN | PROTOCOL SECURED</p>
+</footer>
+
 <script>
-    const SUPABASE_URL = 'https://dmfpnkyiqbzfpzwnvtc.supabase.co'; 
+    // আপনার দেওয়া একদম সঠিক তথ্যগুলো এখানে বসানো হয়েছে
+    const SUPABASE_URL = 'https://dmfpnkyiqybzfpzwnvtc.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC';
+    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function fetchAgents() {
         try {
+            // 'ai_agents' টেবিল থেকে ডেটা ফেচ করা হচ্ছে
             const { data, error } = await _supabase
                 .from('ai_agents')
                 .select('*');
@@ -58,10 +66,11 @@
             document.getElementById('loader').style.display = 'none';
 
             if (!data || data.length === 0) {
-                grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1;'>No data found in 'ai_agents' table.</p>";
+                grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1;'>CONNECTION SUCCESSFUL. NO DATA IN TABLE YET.</p>";
                 return;
             }
 
+            // ডেটা রেন্ডার করা (ছোট হাতের কলাম নাম অনুযায়ী)
             grid.innerHTML = data.map(agent => `
                 <div class="card">
                     <div class="score-circle">${agent.trust_score || '0'}</div>
@@ -76,8 +85,8 @@
                 </div>
             `).join('');
         } catch (err) {
-            console.error("System Error:", err);
-            document.getElementById('loader').innerHTML = "<span style='color:red'>DATA LOAD ERROR: CHECK TABLE COLUMNS.</span>";
+            console.error("Connection Error:", err);
+            document.getElementById('loader').innerHTML = "<span style='color:red'>DATA LOAD ERROR: CHECK SUPABASE PROJECT STATUS.</span>";
         }
     }
 
