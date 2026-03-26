@@ -8,18 +8,89 @@
     <style>
         :root { --neon: #00f2ff; --bg: #050505; --card: #111; --text: #888; }
         body { background: var(--bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; overflow-x: hidden; }
-        
         header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(0,242,255,0.2); background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 100; }
         .logo { font-size: 24px; font-weight: bold; letter-spacing: 5px; color: var(--neon); text-shadow: 0 0 15px var(--neon); }
-
         .dashboard { padding: 40px 20px; max-width: 1200px; margin: auto; min-height: 80vh; }
         .hero { text-align: center; margin-bottom: 50px; }
         .hero h1 { font-size: 2.5em; color: #fff; margin: 0; text-transform: uppercase; }
-        .hero p { color: var(--text); font-size: 1.1em; margin-top: 10px; }
-
-        /* Grid System */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-top: 30px; }
         .card { background: var(--card); border: 1px solid #222; border-radius: 12px; padding: 25px; transition: 0.4s; position: relative; }
         .card:hover { border-color: var(--neon); box-shadow: 0 0 30px rgba(0,242,255,0.15); transform: translateY(-5px); }
-        
-        .score-circle { position:
+        .score-circle { position: absolute; top: 20px; right: 20px; width: 50px; height: 50px; border: 2px solid var(--neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--neon); font-size: 1.2em; box-shadow: 0 0 10px var(--neon); }
+        .badge { display: inline-block; padding: 4px 12px; background: rgba(0,242,255,0.1); color: var(--neon); border-radius: 20px; font-size: 0.75em; text-transform: uppercase; margin-right: 8px; border: 1px solid rgba(0,242,255,0.3); }
+        .stat-label { font-size: 0.75em; color: var(--text); margin-top: 20px; display: flex; justify-content: space-between; }
+        .stat-bar { height: 6px; background: #222; border-radius: 3px; margin: 8px 0 15px 0; overflow: hidden; }
+        .stat-fill { height: 100%; background: linear-gradient(90deg, var(--neon), #00ff88); transition: 2s ease-in-out; }
+        .btn-visit { display: block; width: 100%; padding: 10px; margin-top: 15px; background: transparent; border: 1px solid #444; color: #fff; text-align: center; text-decoration: none; border-radius: 6px; font-size: 0.9em; transition: 0.3s; }
+        .btn-visit:hover { background: var(--neon); color: #000; font-weight: bold; }
+        footer { margin-top: 100px; padding: 60px 20px; border-top: 1px solid #1a1a1a; background: #000; color: #555; font-size: 0.85em; text-align: center; }
+        #loader { text-align: center; padding: 50px; color: var(--neon); font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">AXIOM TRUST PROTOCOL</div>
+</header>
+
+<div class="dashboard">
+    <div class="hero">
+        <h1>AI Reputation Engine <span style="font-size: 0.4em; opacity: 0.5;">v2.0.40</span></h1>
+        <p>The Global Benchmark for Autonomous Agent Verification.</p>
+    </div>
+    <div id="loader">ESTABLISHING QUANTUM LINK TO DATABASE...</div>
+    <div class="grid" id="agent-grid"></div>
+</div>
+
+<footer>
+    <div style="max-width: 800px; margin: auto;">
+        <p>© 2026-2040 AXIOMCHAIN | DATA AGGREGATED FROM PUBLIC PROTOCOLS</p>
+    </div>
+</footer>
+
+<script>
+    // আপনার দেওয়া Supabase Credentials এখানে বসিয়ে দিয়েছি
+    const SUPABASE_URL = 'https://dmfpnkyiqbzfpzwnvtc.supabase.co'; 
+    const SUPABASE_KEY = 'sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function fetchAgents() {
+        try {
+            const { data, error } = await _supabase
+                .from('ai_agents')
+                .select('*')
+                .order('trust_score', { ascending: false });
+
+            if (error) throw error;
+
+            const grid = document.getElementById('agent-grid');
+            document.getElementById('loader').style.display = 'none';
+
+            if (!data || data.length === 0) {
+                grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1;'>Database is empty. Add data from Supabase Table Editor.</p>";
+                return;
+            }
+
+            grid.innerHTML = data.map(agent => `
+                <div class="card">
+                    <div class="score-circle">${agent.Trust_Score || '0'}</div>
+                    <h3>${agent.Name || 'Unknown Agent'}</h3>
+                    <span class="badge">${agent.Category || 'General'}</span>
+                    <span class="badge">SECURED</span>
+                    
+                    <div class="stat-label"><span>Safety Index</span><span>${agent.Safety_Index || '0'}%</span></div>
+                    <div class="stat-bar"><div class="stat-fill" style="width: ${agent.Safety_Index || '0'}%"></div></div>
+                    
+                    <a href="${agent.url || '#'}" target="_blank" class="btn-visit">Access Protocol</a>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error("Error:", err);
+            document.getElementById('loader').innerHTML = "SYSTEM ERROR: Check Supabase Table Name or Keys.";
+        }
+    }
+
+    window.onload = fetchAgents;
+</script>
+</body>
+</html>
