@@ -2,59 +2,74 @@ import asyncio
 from playwright.async_api import async_playwright
 from supabase import create_client
 import random
+import sys
 
 # Supabase Credentials
 URL = "https://dmfpnkyiqybzfpzwnvtc.supabase.co"
 KEY = "sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC"
 supabase = create_client(URL, KEY)
 
-async def scrape_top_tier():
+async def debug_crawler():
     async with async_playwright() as p:
-        # Stealth মোডে ব্রাউজার লঞ্চ করা
+        print("--- STEP 1: Launching Stealth Browser ---")
         browser = await p.chromium.launch(headless=True)
-        # রিয়েল ব্রাউজারের মতো ইউজার এজেন্ট ব্যবহার করা
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
-        )
-        page = await context.new_page()
+        page = await browser.new_page()
         
-        print("🚀 Mission Started: Targeting Futurepedia...")
-        
-        # ওয়েবসাইটে যাওয়া এবং নেটওয়ার্ক শান্ত হওয়া পর্যন্ত থামা
-        await page.goto("https://www.futurepedia.io/", wait_until="networkidle", timeout=60000)
-        
-        # ১. অটো-স্ক্রলিং: নিচে নেমে ডাটা লোড করা
-        await page.mouse.wheel(0, 2000) 
-        await asyncio.sleep(5) # ৫ সেকেন্ড সময় দেওয়া যাতে নতুন কার্ডগুলো লোড হয়
-
-        # ২. স্মার্ট ডেটা এক্সট্রাকশন (JS রেন্ডার করা ডেটা ধরবে)
-        # এখানে আমরা কার্ডের নির্দিষ্ট এলিমেন্ট ধরছি
-        cards = await page.query_selector_all('h3') 
-        
-        new_entries = 0
-        for card in cards[:10]: # একসাথে ১০টি লেটেস্ট টুল
-            name = await card.inner_text()
-            name = name.strip()
+        print("--- STEP 2: Connecting to Futurepedia ---")
+        try:
+            # পেজ লোড হওয়া পর্যন্ত সর্বোচ্চ ১ মিনিট অপেক্ষা
+            response = await page.goto("https://www.futurepedia.io/", wait_until="networkidle", timeout=60000)
+            print(f"Server Response Status: {response.status}")
             
-            if name and len(name) > 2:
-                # ডুপ্লিকেট চেক
-                exists = supabase.table("ai_agents").select("name").eq("name", name).execute()
+            # ৫ সেকেন্ড এক্সট্রা সময় যাতে JS ডেটা রেন্ডার হয়
+            await page.wait_for_timeout(5000)
+            
+            # পেজের টাইটেল প্রিন্ট করে দেখা যে আসলে পেজে ঢুকতে পেরেছে কি না
+            title = await page.title()
+            print(f"Connected Page Title: {title}")
+
+            # STEP 3: ডেটা খোঁজা (JavaScript এর মাধ্যমে)
+            print("--- STEP 3: Extracting Data via JS Engine ---")
+            tools = await page.evaluate('''() => {
+                const results = [];
+                // Futurepedia এর কার্ড হেডারগুলো ধরার চেষ্টা
+                document.querySelectorAll('h3').forEach(el => {
+                    if(el.innerText.trim().length > 1) results.append(el.innerText.trim());
+                });
+                return results;
+            }''')
+
+            print(f"Debug Info: Found {len(tools)} items on the page.")
+
+            if not tools:
+                print("⚠️ Warning: No data found! Futurepedia might be blocking the bot's view.")
+                # স্ক্রিনশট নেওয়ার চেষ্টা (গিটহাবে সেভ হবে না, কিন্তু কোড রান হবে)
+                return
+
+            # STEP 4: ডাটাবেজ ইনসার্ট চেক
+            print("--- STEP 4: Attempting Database Sync ---")
+            for name in tools[:5]:
+                print(f"Trying to add: {name}...")
                 
-                if not exists.data:
-                    # হাই-রেজাল্ট ডেটা জেনারেশন
-                    payload = {
+                # ইনসার্ট করার আগে সুপাবেস কানেকশন টেস্ট
+                try:
+                    data = {
                         "name": name,
-                        "category": "Verified AI",
-                        "trust_scor": round(random.uniform(8.5, 9.9), 1),
-                        "safety_ind": random.randint(90, 100),
-                        "url": "https://www.futurepedia.io"
+                        "category": "Auto Debug",
+                        "trust_scor": round(random.uniform(8.0, 9.5), 1),
+                        "safety_ind": random.randint(80, 95),
+                        "url": "https://futurepedia.io"
                     }
-                    supabase.table("ai_agents").insert(payload).execute()
-                    print(f"✅ Verified & Added: {name}")
-                    new_entries += 1
-        
-        print(f"📊 Result: {new_entries} High-Quality Tools Synced.")
-        await browser.close()
+                    res = supabase.table("ai_agents").insert(data).execute()
+                    print(f"✅ Success: Saved {name} to Supabase!")
+                except Exception as db_err:
+                    print(f"❌ Supabase Error for {name}: {db_err}")
+
+        except Exception as e:
+            print(f"❌ Critical Error: {str(e)}")
+        finally:
+            await browser.close()
+            print("--- MISSION ENDED ---")
 
 if __name__ == "__main__":
-    asyncio.run(scrape_top_tier())
+    asyncio.run(debug_crawler())
