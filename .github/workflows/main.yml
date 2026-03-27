@@ -1,7 +1,32 @@
+name: AI Crawler Bot
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *' # প্রতিদিন একবার অটোমেটিক রান হবে
+  workflow_dispatch: # যাতে আপনি নিজে ক্লিক করে রান করতে পারেন
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install supabase
+          # যদি আরও লাইব্রেরি থাকে তবে এখানে লিখুন
+
       - name: Run Crawler
         env:
-          # এখানে বাম পাশের নামগুলো পাইথন কোডে os.environ.get হিসেবে কাজ করবে
           PROJECT_URL: ${{ secrets.PROJECT_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python crawler.py
