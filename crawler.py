@@ -8,58 +8,56 @@ url = os.environ.get("PROJECT_URL")
 key = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
-def fetch_and_save(source_url, source_name):
-    print(f"{source_name} থেকে ডাটা খোঁজা হচ্ছে...")
-    headers = {'User-Agent': 'Mozilla/5.0'}
+def save_to_db(name, link, source_name):
+    """ডাটাবেসে ডাটা সেভ করার ফাংশন"""
     try:
-        response = requests.get(source_url, headers=headers, timeout=15)
-        soup = BeautifulSoup(response.content, features="xml" if "rss" in source_url else "html.parser")
-        
-        found = 0
-        # RSS ফিড এর জন্য
-        if "rss" in source_url:
-            items = soup.find_all('item')
-            for item in items:
-                name = item.title.text
-                link = item.link.text
-                if save_to_db(name, link): found += 1
-        
-        # সাধারণ HTML সাইট এর জন্য (উদাহরণ: TopAI)
-        else:
-            for link_tag in soup.find_all('a', href=True):
-                if "/tools/" in link_tag['href'] and len(link_tag.text.strip()) > 3:
-                    name = link_tag.text.strip()
-                    link = link_tag['href']
-                    if save_to_db(name, link): found += 1
-        
-        print(f"{source_name} থেকে {found} টি নতুন টুল পাওয়া গেছে।")
-    except Exception as e:
-        print(f"{source_name} এরর: {e}")
-
-def save_to_db(name, link):
-    try:
+        # ক্লিনিং এবং ফরম্যাটিং
+        clean_name = name.strip()
+        if not link.startswith('http'):
+            return False
+            
         data = {
-            "name": name,
+            "name": clean_name,
             "url": link,
-            "category": "AI Tool",
-            "trust_score": 5.0, # ডিফল্ট স্কোর
-            "safety_index": 5.0
+            "category": "AI Agent",
+            "trust_score": 7.0, # প্রাথমিক স্কোর
+            "safety_index": 7.5
         }
+        
+        # upsert ব্যবহার করা হয়েছে যাতে একই URL বারবার না ঢুকে
         supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
+        print(f"[{source_name}] সফলভাবে যুক্ত হয়েছে: {clean_name}")
         return True
-    except:
+    except Exception as e:
         return False
 
-def run_mega_crawler():
-    # সোর্স লিস্ট - এখানে আপনি যত খুশি সাইট যোগ করতে পারেন
-    sources = [
-        ("https://www.futurepedia.io/rss.xml", "Futurepedia"),
-        ("https://topai.tools/new-ai-tools", "TopAI Tools"),
-        ("https://opentools.ai/rss", "OpenTools")
-    ]
+def fetch_from_sources():
+    print("Mega Crawler চালু হচ্ছে...")
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
+    }
     
-    for s_url, s_name in sources:
-        fetch_and_save(s_url, s_name)
+    # সোর্স ১: Futurepedia RSS
+    try:
+        r = requests.get("https://www.futurepedia.io/rss.xml", headers=headers, timeout=15)
+        soup = BeautifulSoup(r.content, features="xml")
+        for item in soup.find_all('item'):
+            save_to_db(item.title.text, item.link.text, "Futurepedia")
+    except: print("Futurepedia সোর্সটি কাজ করছে না।")
+
+    # সোর্স ২: TopAI.tools (New Tools Page)
+    try:
+        r = requests.get("https://topai.tools/new-ai-tools", headers=headers, timeout=15)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        # এই সাইটের স্ট্রাকচার অনুযায়ী সব লিংক খুজছি
+        for a in soup.find_all('a', href=True):
+            if "/t/" in a['href'] or "/tool/" in a['href']:
+                name = a.text.strip()
+                if len(name) > 2:
+                    link = a['href'] if a['href'].startswith('http') else f"https://topai.tools{a['href']}"
+                    save_to_db(name, link, "TopAI")
+    except: print("TopAI সোর্সটি কাজ করছে না।")
 
 if __name__ == "__main__":
-    run_mega_crawler()
+    fetch_from_sources()
+    print("ক্রলিং শেষ!")
