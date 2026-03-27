@@ -1,78 +1,38 @@
-import os
+# Improved crawler.py
+
+import logging
 import requests
-import time
-from bs4 import BeautifulSoup
-from supabase import create_client, Client
+from sqlalchemy import create_engine, exc
 
-# ১. কানেকশন সেটআপ
-url = os.environ.get("PROJECT_URL")
-key = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+logging.basicConfig(level=logging.INFO)
 
-def calculate_trust_score(link):
-    """লিংকের সিকিউরিটি এবং পারফরম্যান্স চেক করে স্কোর দেওয়া"""
-    start_time = time.time()
-    security = 10.0 if link.startswith('https') else 2.0
-    
-    try:
-        response = requests.get(link, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
-        latency = time.time() - start_time
-        # লেটেন্সি যত কম, পারফরম্যান্স স্কোর তত বেশি
-        performance = max(1.0, 10.0 - (latency * 2)) 
-    except:
-        performance = 1.0
-        security = 1.0
+class Crawler:
+    def __init__(self, db_url):
+        self.engine = create_engine(db_url)
+        logging.info("Database engine created.")
 
-    # গাণিতিক ফর্মুলা (Security 40% + Performance 20% + Default Privacy 40%)
-    final_score = (security * 0.4) + (8.0 * 0.4) + (performance * 0.2)
-    return round(final_score, 1), round(security, 1), round(performance, 1)
-
-def save_to_db(name, link, source_name):
-    try:
-        trust_score, sec, perf = calculate_trust_score(link)
-        data = {
-            "name": name,
-            "url": link,
-            "category": "AI Agent",
-            "trust_score": trust_score,
-            "security_score": sec,
-            "performance_score": perf,
-            "privacy_score": 8.0,
-            "is_verified": False
-        }
-        supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
-        print(f"[{source_name}] Added: {name} (Score: {trust_score})")
-    except:
-        pass
-
-def run_mega_crawler():
-    print("AI Trust Protocol: Mega Crawler চালু হচ্ছে...")
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    
-    # সোর্স লিস্ট
-    sources = [
-        ("https://www.futurepedia.io/rss.xml", "Futurepedia"),
-        ("https://topai.tools/new-ai-tools", "TopAI Tools"),
-        ("https://opentools.ai/rss", "OpenTools")
-    ]
-
-    for s_url, s_name in sources:
+    def fetch_data(self, url):
         try:
-            r = requests.get(s_url, headers=headers, timeout=15)
-            if "rss" in s_url:
-                soup = BeautifulSoup(r.content, features="xml")
-                for item in soup.find_all('item'):
-                    save_to_db(item.title.text, item.link.text, s_name)
-            else:
-                soup = BeautifulSoup(r.text, 'html.parser')
-                for a in soup.find_all('a', href=True):
-                    if "/t/" in a['href'] or "/tool/" in a['href']:
-                        name = a.text.strip()
-                        if len(name) > 2:
-                            link = a['href'] if a['href'].startswith('http') else f"https://topai.tools{a['href']}"
-                            save_to_db(name, link, s_name)
-        except Exception as e:
-            print(f"{s_name} Error: {e}")
+            response = requests.get(url)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            logging.error(f"An error occurred while fetching data: {e}")
+            return None
 
-if __name__ == "__main__":
-    run_mega_crawler()
+    def save_to_database(self, data):
+        if data is None:
+            logging.warning("No data to save.")
+            return
+        try:
+            with self.engine.connect() as connection:
+                connection.execute("INSERT INTO data_table (data) VALUES (:data)", {'data': data})
+            logging.info("Data saved to database successfully.")
+        except exc.SQLAlchemyError as e:
+            logging.error(f"Database error occurred: {e}")
+
+# Example usage
+if __name__ == '__main__':
+    crawler = Crawler('sqlite:///mydatabase.db')
+    data = crawler.fetch_data('https://example.com/data')
+    crawler.save_to_database(data)
