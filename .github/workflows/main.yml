@@ -1,24 +1,7 @@
-name: Final Force Sync 2040
-
-on:
-  workflow_dispatch: # যাতে আপনি বাটন টিপে রান করতে পারেন
-
-jobs:
-  sync:
-    runs-on: ubuntu-latest
     steps:
-      - name: 1. Code Download
-        uses: actions/checkout@v4
-
-      - name: 2. Python Setup
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: 3. Install Requirements
-        run: pip install requests supabase beautifulsoup4 lxml
-
-      - name: 4. Execution (The Mission)
+      - name: Run Crawler
         env:
-          PYTHONUNBUFFERED: 1
+          # এখানে বাম পাশের নামগুলো পাইথন কোডে os.environ.get হিসেবে কাজ করবে
+          PROJECT_URL: ${{ secrets.PROJECT_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python crawler.py
