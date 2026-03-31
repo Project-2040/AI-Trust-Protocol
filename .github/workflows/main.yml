@@ -21,9 +21,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install supabase requests beautifulsoup4 playwright playwright-stealth
-          playwright install chromium
-          # ব্রাউজারের সিস্টেম ডিপেন্ডেন্সি ইনস্টল করা
-          sudo playwright install-deps chromium
+          # কমান্ডটি সংশোধন করা হয়েছে
+          python -m playwright install chromium
+          python -m playwright install-deps chromium
 
       - name: Run Crawler
         env:
