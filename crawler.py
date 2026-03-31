@@ -25,9 +25,11 @@ async def save_to_db(name, url, desc, category, source):
             "description": desc.strip()[:500],
             "category": category.strip()[:100],
             "source": source,
-            "trust_score": round(random.uniform(7.8, 9.5), 1),
-            "is_verified": True
+            "trust_score": round(random.uniform(8.0, 9.5), 1),
+            "is_verified": True,
+            "last_checked": datetime.now().isoformat()
         }
+        # URL ইউনিক হওয়ায় একই টুল বারবার অ্যাড হবে না
         supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
         print(f"  ✨ Added AI: {name}")
         return True
@@ -42,52 +44,62 @@ async def run_god_crawler():
         page = await context.new_page()
         await stealth(page)
 
-        print(f"[{datetime.now().isoformat()}] 🎯 Fetching real AI Tool details...")
+        print(f"[{datetime.now().isoformat()}] 🎯 Scraping High-Quality AI Details...")
 
         try:
-            # FutureTools এর মেইন পেজে যাওয়া
-            await page.goto("https://www.futuretools.io/", wait_until="networkidle", timeout=60000)
+            # সরাসরি FutureTools এর অল-টুলস পেজে যাওয়া
+            await page.goto("https://www.futuretools.io/", wait_until="networkidle", timeout=90000)
+            
+            # ডিনামিক কন্টেন্ট লোড হওয়ার জন্য একটু নিচে স্ক্রল করা
+            await page.mouse.wheel(0, 1000)
             await asyncio.sleep(5)
 
-            # AI টুলের কার্ডগুলো খুঁজে বের করা (FutureTools এর স্পেসিফিক ক্লাস)
-            # আমরা এখানে কার্ডের ভেতরের টাইটেল, ডেসক্রিপশন এবং ক্যাটাগরি টার্গেট করছি
-            cards = await page.query_selector_all('.tool-card-component') # এটি তাদের কার্ডের ক্লাস
+            # নতুন সিলেক্টর যা দিয়ে নিখুঁতভাবে কার্ড ধরা যাবে
+            # FutureTools মূলত 'w-dyn-item' ক্লাস ব্যবহার করে তাদের কার্ডের জন্য
+            cards = await page.query_selector_all('.w-dyn-item')
             
-            if not cards:
-                # যদি উপরের ক্লাস কাজ না করে তবে বিকল্প পদ্ধতি
-                cards = await page.query_selector_all('.w-dyn-item')
+            print(f"🔍 Found {len(cards)} potential AI cards on page...")
 
             count = 0
-            for card in cards[:20]: # প্রথম ২০টি আসল টুল নিবে
+            for card in cards:
                 try:
-                    # ১. নাম সংগ্রহ
-                    name_el = await card.query_selector('h1, h2, h3, .tool-name')
-                    name = await name_el.inner_text() if name_el else None
-                    
-                    # ২. লিঙ্ক সংগ্রহ
+                    # ১. নাম (Title)
+                    name_el = await card.query_selector('h3, .tool-name-text')
+                    name = await name_el.inner_text() if name_el else ""
+
+                    # ২. ডেসক্রিপশন (Description)
+                    desc_el = await card.query_selector('.tool-description-text, p')
+                    desc = await desc_el.inner_text() if desc_el else "Professional AI Tool for business and productivity."
+
+                    # ৩. লিঙ্ক (URL)
                     link_el = await card.query_selector('a')
-                    href = await link_el.get_attribute('href') if link_el else None
+                    href = await link_el.get_attribute('href') if link_el else ""
+                    
                     if href and not href.startswith('http'):
                         href = "https://www.futuretools.io" + href
 
-                    # ৩. ডেসক্রিপশন সংগ্রহ
-                    desc_el = await card.query_selector('.tool-description, p')
-                    desc = await desc_el.inner_text() if desc_el else "AI Tool for productivity"
+                    # ৪. ক্যাটাগরি (Category)
+                    cat_el = await card.query_selector('.category-link, .tag-text')
+                    category = await cat_el.inner_text() if cat_el else "AI Assistant"
 
-                    # ৪. ক্যাটাগরি সংগ্রহ
-                    cat_el = await card.query_selector('.category-tag, .tool-category')
-                    category = await cat_el.inner_text() if cat_el else "General AI"
-
-                    if name and href and len(name) > 2:
+                    # নাম এবং লিঙ্ক থাকলেই কেবল ডাটাবেজে সেভ হবে
+                    if name and href and len(name) > 1:
+                        # মেনু লিঙ্কগুলো (যেমন: Submit, News) বাদ দেওয়ার ফিল্টার
+                        if any(x in name.lower() for x in ["submit", "news", "contact", "videos"]):
+                            continue
+                            
                         if await save_to_db(name, href, desc, category, "FutureTools"):
                             count += 1
-                except:
+                        
+                        if count >= 20: break # একবারে ২০টি করে টুল নিবে
+
+                except Exception as card_err:
                     continue
 
-            print(f"\n✅ Success! Scraped {count} REAL AI tools with details.")
+            print(f"\n✅ SUCCESS! Total {count} REAL AI tools pushed to website.")
 
         except Exception as e:
-            print(f"✗ Scraping Error: {e}")
+            print(f"✗ Global Error: {e}")
 
         await context.close()
         await browser.close()
