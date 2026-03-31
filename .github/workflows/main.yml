@@ -3,14 +3,11 @@ name: AI Crawler Bot
 on:
   push:
     branches: [ main ]
-  schedule:
-    - cron: '0 0 * * *' # প্রতিদিন রাত ১২টায় অটো রান হবে
-  workflow_dispatch: # ম্যানুয়ালি রান করার জন্য
+  workflow_dispatch: 
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -23,16 +20,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # God Level abilities এর জন্য নতুন লাইব্রেরি যোগ করা হয়েছে
           pip install supabase requests beautifulsoup4 playwright playwright-stealth
-          # ব্রাউজার ইঞ্জিন ইনস্টল করা হচ্ছে
           playwright install chromium
+          # ব্রাউজারের সিস্টেম ডিপেন্ডেন্সি ইনস্টল করা
+          sudo playwright install-deps chromium
 
       - name: Run Crawler
         env:
-          # আপনার GitHub Secrets থেকে ডাটা নিবে
           PROJECT_URL: ${{ secrets.PROJECT_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          # যদি প্রক্সি কেনা থাকে তবে এখানে সিক্রেট অ্যাড করতে পারেন
           RESIDENTIAL_PROXY: ${{ secrets.RESIDENTIAL_PROXY }} 
         run: python crawler.py
