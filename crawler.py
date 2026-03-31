@@ -4,8 +4,7 @@ import random
 import asyncio
 from datetime import datetime
 from playwright.async_api import async_playwright
-# ইমপোর্ট করার পদ্ধতি পরিবর্তন করা হয়েছে
-from playwright_stealth import stealth
+import playwright_stealth
 from supabase import create_client, Client
 
 # --- SETUP ---
@@ -31,9 +30,23 @@ async def save_to_db(name, url, source):
         supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
         print(f"  ✓ Saved: {name[:30]}")
         return True
+    except: return False
+
+async def apply_stealth(page):
+    """ভার্সন অনুযায়ী সঠিক stealth ফাংশন কল করার সেফ মেথড"""
+    try:
+        # পদ্ধতি ১: stealth_async চেক করা
+        if hasattr(playwright_stealth, 'stealth_async'):
+            await playwright_stealth.stealth_async(page)
+        # পদ্ধতি ২: সরাসরি মডিউল কল করা সম্ভব কি না চেক করা
+        elif callable(playwright_stealth):
+            await playwright_stealth(page)
+        # পদ্ধতি ৩: সরাসরি stealth ফাংশন কল করা
+        else:
+            from playwright_stealth import stealth
+            await stealth(page)
     except Exception as e:
-        print(f"  ✗ DB Error: {e}")
-        return False
+        print(f"⚠️ Stealth Error (Ignoring): {e}")
 
 async def run_god_crawler():
     async with async_playwright() as p:
@@ -44,37 +57,30 @@ async def run_god_crawler():
         )
         page = await context.new_page()
 
-        # Stealth Mode চালু করার সঠিক উপায়
-        await stealth(page)
+        # সেফলি স্টিলথ মোড অ্যাপ্লাই করা
+        await apply_stealth(page)
         
-        print(f"[{datetime.now().isoformat()}] 🚀 Scraper is now Human-Like...")
+        print(f"[{datetime.now().isoformat()}] 🚀 Scraper Started...")
 
-        # টেস্ট সোর্স
         url = "https://www.futuretools.io/"
-        
         try:
             await page.goto(url, wait_until="domcontentloaded", timeout=60000)
             await asyncio.sleep(5) 
 
-            # ডাটা সংগ্রহ
             links = await page.query_selector_all('a')
             count = 0
             for link in links:
                 try:
                     title = await link.inner_text()
                     href = await link.get_attribute('href')
-                    
-                    if title and href and 'http' in href and count < 15:
+                    if title and href and 'http' in href and count < 10:
                         if await save_to_db(title, href, "FutureTools"):
                             count += 1
                 except: continue
-            
             print(f"✅ Success! Added {count} items.")
-
         except Exception as e:
             print(f"✗ Error: {e}")
 
-        # সেফলি ক্লোজ করা
         await context.close()
         await browser.close()
 
