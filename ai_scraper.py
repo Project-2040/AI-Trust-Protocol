@@ -1,70 +1,71 @@
 import os
-import time
 import requests
-from datetime import datetime
 from bs4 import BeautifulSoup
 from supabase import create_client, Client
+from datetime import datetime
 
 PROJECT_URL = os.environ.get("PROJECT_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-print(f"[{datetime.now().isoformat()}] 🤖 AI Trust Protocol Scraper Starting...")
+supabase: Client = create_client(PROJECT_URL, SUPABASE_KEY)
 
-try:
-    supabase: Client = create_client(PROJECT_URL, SUPABASE_KEY)
-    print("✓ Supabase connected successfully!")
-except Exception as e:
-    print(f"✗ Supabase connection failed: {e}")
-    exit(1)
+# ব্লকিং এড়াতে উন্নত হেডার
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'application/rss+xml, application/xml, text/xml, */*'
+}
 
-HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-
-def save_to_db(name, url, source, description=""):
+def save_to_db(name, url, source):
     try:
         data = {
-            "name": name.strip()[:200],
-            "url": url.strip(),
-            "category": "AI Agent",
-            "description": description.strip()[:500],
-            "trust_score": 7.5,
-            "security_score": 8.0,
-            "performance_score": 8.0,
-            "privacy_score": 7.5,
+            "name": name[:200],
+            "url": url,
             "source": source,
+            "category": "AI Tool",
+            "trust_score": 7.5,
             "is_verified": False
         }
-        # ডাটাবেজে পাঠানোর আগে প্রিন্ট করে দেখা
-        print(f"  Attempting to save: {name}")
-        result = supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
+        supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
         return True
     except Exception as e:
         print(f"  ✗ Save Error: {e}")
         return False
 
-def scrape_futurepedia():
-    print("\n📍 Scraping Futurepedia...")
+def scrape_rss(url, source_name):
+    print(f"\n📍 Scraping {source_name}...")
     try:
-        response = requests.get('https://www.futurepedia.io/rss.xml', headers=HEADERS, timeout=15)
-        print(f"  Response Code: {response.status_code}") # ওয়েবসাইট থেকে রেসপন্স আসছে কি না
+        # ভেরিফিকেশন এড়াতে এবং ব্লকিং কমাতে সেশন ব্যবহার
+        session = requests.Session()
+        response = session.get(url, headers=HEADERS, timeout=20)
+        
+        if response.status_code != 200:
+            print(f"  ✗ Failed: Status Code {response.status_code}")
+            return 0
+            
         soup = BeautifulSoup(response.content, 'xml')
         items = soup.find_all('item')
-        print(f"  Found {len(items)} items in RSS feed") # কয়টি আইটেম পাওয়া গেল
+        print(f"  ✓ Found {len(items)} items")
         
         count = 0
-        for item in items[:10]:
-            title = item.find('title')
-            link = item.find('link')
+        for item in items[:15]:
+            title = item.find('title').text if item.find('title') else ""
+            link = item.find('link').text if item.find('link') else ""
             if title and link:
-                if save_to_db(title.text, link.text, "Futurepedia"):
+                if save_to_db(title, link, source_name):
                     count += 1
         return count
     except Exception as e:
-        print(f"  ✗ Futurepedia error: {e}")
+        print(f"  ✗ Error: {e}")
         return 0
 
 def main():
+    print(f"🚀 Started at: {datetime.now()}")
+    
+    # Futurepedia ব্লক করলে আমরা Thermostat বা অন্য RSS ব্যবহার করতে পারি
+    # আপাতত Futurepedia এর বিকল্প একটি ফিড ট্রাই করছি
     total = 0
-    total += scrape_futurepedia()
+    total += scrape_rss('https://www.futuretools.io/feed.xml', 'FutureTools')
+    
     print(f"\n✅ COMPLETED! Total items added/updated: {total}")
 
 if __name__ == "__main__":
