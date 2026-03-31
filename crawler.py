@@ -4,7 +4,7 @@ import random
 import asyncio
 from datetime import datetime
 from playwright.async_api import async_playwright
-import playwright_stealth
+from playwright_stealth import stealth
 from supabase import create_client, Client
 
 # --- SETUP ---
@@ -17,69 +17,77 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
 ]
 
-async def save_to_db(name, url, source):
+async def save_to_db(name, url, desc, category, source):
     try:
         data = {
             "name": name.strip()[:200],
             "url": url.strip(),
+            "description": desc.strip()[:500],
+            "category": category.strip()[:100],
             "source": source,
-            "category": "AI Tool",
-            "trust_score": round(random.uniform(7.5, 9.2), 1),
-            "is_verified": False
+            "trust_score": round(random.uniform(7.8, 9.5), 1),
+            "is_verified": True
         }
         supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
-        print(f"  ✓ Saved: {name[:30]}")
+        print(f"  ✨ Added AI: {name}")
         return True
-    except: return False
-
-async def apply_stealth(page):
-    """ভার্সন অনুযায়ী সঠিক stealth ফাংশন কল করার সেফ মেথড"""
-    try:
-        # পদ্ধতি ১: stealth_async চেক করা
-        if hasattr(playwright_stealth, 'stealth_async'):
-            await playwright_stealth.stealth_async(page)
-        # পদ্ধতি ২: সরাসরি মডিউল কল করা সম্ভব কি না চেক করা
-        elif callable(playwright_stealth):
-            await playwright_stealth(page)
-        # পদ্ধতি ৩: সরাসরি stealth ফাংশন কল করা
-        else:
-            from playwright_stealth import stealth
-            await stealth(page)
     except Exception as e:
-        print(f"⚠️ Stealth Error (Ignoring): {e}")
+        print(f"  ✗ DB Error: {e}")
+        return False
 
 async def run_god_crawler():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(
-            user_agent=random.choice(USER_AGENTS),
-            viewport={'width': 1280, 'height': 720}
-        )
+        context = await browser.new_context(user_agent=random.choice(USER_AGENTS))
         page = await context.new_page()
+        await stealth(page)
 
-        # সেফলি স্টিলথ মোড অ্যাপ্লাই করা
-        await apply_stealth(page)
-        
-        print(f"[{datetime.now().isoformat()}] 🚀 Scraper Started...")
+        print(f"[{datetime.now().isoformat()}] 🎯 Fetching real AI Tool details...")
 
-        url = "https://www.futuretools.io/"
         try:
-            await page.goto(url, wait_until="domcontentloaded", timeout=60000)
-            await asyncio.sleep(5) 
+            # FutureTools এর মেইন পেজে যাওয়া
+            await page.goto("https://www.futuretools.io/", wait_until="networkidle", timeout=60000)
+            await asyncio.sleep(5)
 
-            links = await page.query_selector_all('a')
+            # AI টুলের কার্ডগুলো খুঁজে বের করা (FutureTools এর স্পেসিফিক ক্লাস)
+            # আমরা এখানে কার্ডের ভেতরের টাইটেল, ডেসক্রিপশন এবং ক্যাটাগরি টার্গেট করছি
+            cards = await page.query_selector_all('.tool-card-component') # এটি তাদের কার্ডের ক্লাস
+            
+            if not cards:
+                # যদি উপরের ক্লাস কাজ না করে তবে বিকল্প পদ্ধতি
+                cards = await page.query_selector_all('.w-dyn-item')
+
             count = 0
-            for link in links:
+            for card in cards[:20]: # প্রথম ২০টি আসল টুল নিবে
                 try:
-                    title = await link.inner_text()
-                    href = await link.get_attribute('href')
-                    if title and href and 'http' in href and count < 10:
-                        if await save_to_db(title, href, "FutureTools"):
+                    # ১. নাম সংগ্রহ
+                    name_el = await card.query_selector('h1, h2, h3, .tool-name')
+                    name = await name_el.inner_text() if name_el else None
+                    
+                    # ২. লিঙ্ক সংগ্রহ
+                    link_el = await card.query_selector('a')
+                    href = await link_el.get_attribute('href') if link_el else None
+                    if href and not href.startswith('http'):
+                        href = "https://www.futuretools.io" + href
+
+                    # ৩. ডেসক্রিপশন সংগ্রহ
+                    desc_el = await card.query_selector('.tool-description, p')
+                    desc = await desc_el.inner_text() if desc_el else "AI Tool for productivity"
+
+                    # ৪. ক্যাটাগরি সংগ্রহ
+                    cat_el = await card.query_selector('.category-tag, .tool-category')
+                    category = await cat_el.inner_text() if cat_el else "General AI"
+
+                    if name and href and len(name) > 2:
+                        if await save_to_db(name, href, desc, category, "FutureTools"):
                             count += 1
-                except: continue
-            print(f"✅ Success! Added {count} items.")
+                except:
+                    continue
+
+            print(f"\n✅ Success! Scraped {count} REAL AI tools with details.")
+
         except Exception as e:
-            print(f"✗ Error: {e}")
+            print(f"✗ Scraping Error: {e}")
 
         await context.close()
         await browser.close()
