@@ -17,19 +17,20 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
 ]
 
-async def save_to_db(name, url, desc, category):
+async def save_to_db(name, url, desc, category, img_url):
     try:
         data = {
             "name": name.strip()[:200],
             "url": url.strip(),
             "description": desc.strip()[:500],
             "category": category.strip()[:100],
+            "image_url": img_url, # নতুন ইমেজ কলাম
             "source": "FutureTools",
             "trust_score": round(random.uniform(8.0, 9.5), 1),
             "is_verified": True
         }
         supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
-        print(f"  ✨ Added AI: {name}")
+        print(f"  ✨ Added with Image: {name}")
         return True
     except Exception as e:
         print(f"  ✗ DB Error: {e}")
@@ -42,62 +43,55 @@ async def run_god_crawler():
         page = await context.new_page()
         await stealth(page)
 
-        print(f"[{datetime.now().isoformat()}] 🎯 Fetching REAL AI Tools...")
+        print(f"[{datetime.now().isoformat()}] 🎯 Fetching AI Tools with Images...")
 
         try:
-            # ১. পেজে যাওয়া
             await page.goto("https://www.futuretools.io/", wait_until="networkidle", timeout=90000)
             
-            # ২. কার্ড লোড হওয়া পর্যন্ত অপেক্ষা করা (খুবই গুরুত্বপূর্ণ)
-            # FutureTools এর বর্তমান স্ট্রাকচার অনুযায়ী এই ক্লাসটি চেক করবে
-            try:
-                await page.wait_for_selector('.tool-card-component, .w-dyn-item', timeout=20000)
-            except:
-                print("⚠️ Timeout waiting for cards. Trying to scroll...")
+            # ইমেজ লোড হওয়ার জন্য কিছুটা সময় দেওয়া ও স্ক্রল করা
+            await page.mouse.wheel(0, 2000)
+            await asyncio.sleep(7)
 
-            # ৩. স্ক্রল ডাউন (যাতে ইমেজ ও ডিটেইলস লোড হয়)
-            await page.mouse.wheel(0, 1500)
-            await asyncio.sleep(5)
-
-            # ৪. ডাটা এক্সট্রাকশন
             cards = await page.query_selector_all('.tool-card-component, .w-dyn-item')
-            print(f"🔍 Found {len(cards)} cards. Extracting details...")
+            print(f"🔍 Found {len(cards)} cards. Extracting info...")
 
             count = 0
             for card in cards:
                 try:
-                    # টাইটেল খোঁজা
-                    name_el = await card.query_selector('h3, .tool-name-text, a[style*="font-weight: bold"]')
+                    # ১. নাম
+                    name_el = await card.query_selector('h3, .tool-name-text')
                     name = await name_el.inner_text() if name_el else ""
 
-                    # ডেসক্রিপশন খোঁজা
+                    # ২. ইমেজ ইউআরএল (Thumbnail)
+                    img_el = await card.query_selector('img')
+                    img_src = await img_el.get_attribute('src') if img_el else ""
+                    
+                    # ৩. ডেসক্রিপশন
                     desc_el = await card.query_selector('.tool-description-text, p')
                     desc = await desc_el.inner_text() if desc_el else ""
 
-                    # ক্যাটাগরি খোঁজা
-                    cat_el = await card.query_selector('.category-link, .tag-text')
-                    category = await cat_el.inner_text() if cat_el else "AI Tool"
-
-                    # অরিজিনাল ওয়েবসাইট লিঙ্ক
+                    # ৪. লিঙ্ক
                     link_el = await card.query_selector('a')
                     href = await link_el.get_attribute('href') if link_el else ""
-                    
                     if href and not href.startswith('http'):
                         href = "https://www.futuretools.io" + href
 
-                    # ফিল্টার: অপ্রাসঙ্গিক লিঙ্ক বাদ দেওয়া
+                    # ৫. ক্যাটাগরি
+                    cat_el = await card.query_selector('.category-link, .tag-text')
+                    category = await cat_el.inner_text() if cat_el else "AI Tool"
+
+                    # ফিল্টার ও সেভ
                     if name and href and len(name) > 2:
-                        if any(x in name.lower() for x in ["submit", "news", "video", "contact"]):
-                            continue
+                        if any(x in name.lower() for x in ["submit", "news", "video"]): continue
                             
-                        if await save_to_db(name, href, desc, category):
+                        if await save_to_db(name, href, desc, category, img_src):
                             count += 1
                         
-                        if count >= 15: break # টেস্টের জন্য ১৫টি
+                        if count >= 25: break # ২৫টি টুল নিবে
 
                 except: continue
 
-            print(f"\n✅ Success! Scraped {count} REAL AI tools.")
+            print(f"\n✅ SUCCESS! {count} AI tools with thumbnails added.")
 
         except Exception as e:
             print(f"✗ Error: {e}")
