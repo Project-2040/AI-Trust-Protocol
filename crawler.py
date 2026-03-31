@@ -4,7 +4,8 @@ import random
 import asyncio
 from datetime import datetime
 from playwright.async_api import async_playwright
-from playwright_stealth import stealth
+# ইমপোর্ট করার সঠিক পদ্ধতি
+import playwright_stealth
 from supabase import create_client, Client
 
 # --- SETUP ---
@@ -19,7 +20,6 @@ USER_AGENTS = [
 
 async def save_to_db(name, url, source):
     try:
-        # আপনার টেবিলের কলাম অনুযায়ী ডাটা ম্যাপিং
         data = {
             "name": name.strip()[:200],
             "url": url.strip(),
@@ -39,19 +39,19 @@ async def run_god_crawler():
         context = await browser.new_context(user_agent=random.choice(USER_AGENTS))
         page = await context.new_page()
 
-        # Stealth Mode চালু করা
-        await stealth(page)
+        # Stealth Mode চালু করার সঠিক সিনট্যাক্স
+        await playwright_stealth.stealth_async(page)
 
         print(f"[{datetime.now().isoformat()}] 🚀 Bot is now Human-Like...")
 
-        # সোর্স হিসেবে FutureTools ব্যবহার (এটি ব্লক কম করে)
+        # সোর্স ওয়েবসাইট
         url = "https://www.futuretools.io/"
         
         try:
-            await page.goto(url, wait_until="networkidle", timeout=60000)
-            await asyncio.sleep(5) # মানুষের মতো অপেক্ষা
+            await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            await asyncio.sleep(5) 
 
-            # পেজ থেকে টাইটেল এবং লিঙ্ক খোঁজা
+            # লিঙ্কগুলো খুঁজে বের করা
             links = await page.query_selector_all('a')
             count = 0
             for link in links:
@@ -64,7 +64,7 @@ async def run_god_crawler():
             
             print(f"✅ Success! Added {count} items.")
         except Exception as e:
-            print(f"✗ Error: {e}")
+            print(f"✗ Error during scraping: {e}")
 
         await browser.close()
 
