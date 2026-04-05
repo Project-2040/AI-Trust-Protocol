@@ -1,228 +1,928 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NODE THE FUTURE | Supreme Intelligence Sovereign</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono&family=Syne:wght@800&family=Inter:wght@200;400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Node The Future | AI Trust Protocol — Global Intelligence Directory</title>
+<meta name="description" content="Node The Future — The world's most advanced AI trust scoring and verification platform. Every AI tool, scored, verified, ranked. Your gateway to the AI future.">
+<meta name="keywords" content="AI tools directory, AI trust score, AI verification, AI agents, best AI tools 2040, AI safety rating, node the future, AI reputation engine">
+<meta property="og:title" content="Node The Future | AI Trust Protocol">
+<meta property="og:description" content="Every AI. Scored. Verified. The Global Intelligence Directory.">
+<meta name="robots" content="index, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --ink:#020509;
+  --ink2:#07101a;
+  --ink3:#0d1e2e;
+  --c:#00e5ff;
+  --c2:#39ff14;
+  --c3:#ff3864;
+  --c4:#bf5af2;
+  --gold:#ffd60a;
+  --t1:#ffffff;
+  --t2:#94b4c4;
+  --t3:#4a6878;
+  --mono:'Share Tech Mono',monospace;
+  --disp:'Syne',sans-serif;
+  --body:'Space Grotesk',sans-serif;
+  --r:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;font-size:16px;}
+body{background:var(--ink);color:var(--t2);font-family:var(--body);overflow-x:hidden;min-height:100vh;}
 
-    <style>
-        :root {
-            --accent: #00f2ff;
-            --bg: #000000;
-            --border: rgba(0, 242, 255, 0.15);
-            --glass: rgba(255, 255, 255, 0.02);
-            --font-elite: 'Syne', sans-serif;
-            --font-data: 'Space Mono', monospace;
-        }
+/* ═══ WEBGL CANVAS ═══ */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+/* ═══ GRAIN OVERLAY ═══ */
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
 
-        /* background grid effect */
-        body::before {
-            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 50px 50px; z-index: -1; opacity: 0.2;
-        }
+/* ═══ HEADER ═══ */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  padding:0 clamp(16px,4vw,48px);height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(2,5,9,0.7);backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid rgba(0,229,255,0.08);
+  transition:background 0.3s;
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-mark{
+  width:32px;height:32px;position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.logo-mark svg{width:32px;height:32px;}
+.logo-mark .lm-outer{fill:none;stroke:var(--c);stroke-width:1.5;animation:spinSlow 20s linear infinite;}
+.logo-mark .lm-inner{fill:var(--c);opacity:0.9;}
+.logo-mark .lm-dot{fill:var(--ink);width:6px;height:6px;}
+@keyframes spinSlow{to{transform:rotate(360deg);transform-origin:center;}}
+.logo-txt{font-family:var(--disp);font-size:15px;font-weight:800;letter-spacing:1px;color:var(--t1);}
+.logo-txt span{color:var(--c);}
+.nav{display:flex;gap:2px;align-items:center;}
+.nav a{font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:7px 12px;color:var(--t3);text-decoration:none;text-transform:uppercase;transition:color 0.2s;border-radius:4px;}
+.nav a:hover{color:var(--c);background:rgba(0,229,255,0.06);}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.live-pill{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--c2);padding:5px 10px;border:1px solid rgba(57,255,20,0.2);border-radius:20px;background:rgba(57,255,20,0.05);}
+.live-dot{width:5px;height:5px;background:var(--c2);border-radius:50%;box-shadow:0 0 6px var(--c2);animation:ldot 2s infinite;}
+@keyframes ldot{0%,100%{opacity:1;}50%{opacity:0.2;}}
+.btn-cta{font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:8px 16px;background:var(--c);color:var(--ink);border:none;border-radius:4px;cursor:pointer;font-weight:700;text-decoration:none;text-transform:uppercase;transition:all 0.2s;white-space:nowrap;}
+.btn-cta:hover{background:#fff;box-shadow:0 0 20px rgba(0,229,255,0.4);}
 
-        #neural-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; opacity: 0.4; }
+/* ═══ HERO ═══ */
+.hero{
+  position:relative;z-index:2;
+  min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:80px clamp(16px,5vw,60px) 60px;
+  overflow:hidden;
+}
+.hero-globe{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0.25;
+}
+#globe-canvas{width:min(700px,110vw);height:min(700px,110vw);}
 
-        /* Sovereign Header */
-        header { 
-            position: fixed; width: 100%; padding: 25px 40px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            z-index: 1000; backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
-        }
-        .logo { font-family: var(--font-elite); font-size: 1.2rem; letter-spacing: 4px; color: #fff; text-decoration: none; text-transform: uppercase; }
-        .logo span { color: var(--accent); text-shadow: 0 0 15px var(--accent); }
-        .status-pill { font-family: var(--font-data); font-size: 10px; color: var(--accent); padding: 5px 12px; border: 1px solid var(--accent); border-radius: 2px; letter-spacing: 2px; }
+.hero-eyebrow{
+  font-family:var(--mono);font-size:clamp(8px,1.5vw,11px);
+  letter-spacing:5px;color:var(--c);text-transform:uppercase;
+  margin-bottom:24px;opacity:0;
+  animation:fadeUp 1s 0.2s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero-title{
+  font-family:var(--disp);
+  font-size:clamp(2.8rem,10vw,8.5rem);
+  font-weight:800;line-height:0.95;
+  text-transform:uppercase;letter-spacing:-2px;
+  margin-bottom:24px;
+  opacity:0;animation:fadeUp 1s 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero-title .t-white{color:var(--t1);display:block;}
+.hero-title .t-glow{
+  display:block;color:var(--c);
+  text-shadow:0 0 40px rgba(0,229,255,0.5),0 0 80px rgba(0,229,255,0.2);
+  -webkit-text-stroke:1px rgba(0,229,255,0.3);
+}
+.hero-title .t-outline{
+  display:block;
+  -webkit-text-stroke:1px rgba(255,255,255,0.2);
+  color:transparent;
+  font-size:0.55em;letter-spacing:8px;font-weight:400;margin-top:12px;
+}
+.hero-desc{
+  max-width:560px;font-size:clamp(0.9rem,2vw,1.1rem);
+  color:var(--t2);line-height:1.8;font-weight:300;
+  margin-bottom:44px;opacity:0;
+  animation:fadeUp 1s 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero-actions{
+  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
+  opacity:0;animation:fadeUp 1s 0.65s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.btn-primary{
+  font-family:var(--mono);font-size:10px;letter-spacing:3px;
+  padding:15px 40px;background:var(--c);color:var(--ink);
+  border:none;border-radius:4px;cursor:pointer;font-weight:700;
+  text-decoration:none;text-transform:uppercase;
+  transition:all 0.3s;position:relative;overflow:hidden;
+}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.2),transparent);pointer-events:none;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,229,255,0.4);}
+.btn-secondary{
+  font-family:var(--mono);font-size:10px;letter-spacing:3px;
+  padding:15px 40px;background:rgba(255,255,255,0.05);
+  color:var(--t2);border:1px solid rgba(255,255,255,0.1);
+  border-radius:4px;cursor:pointer;text-decoration:none;
+  text-transform:uppercase;transition:all 0.3s;
+}
+.btn-secondary:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.2);color:var(--t1);}
+.hero-scroll{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--t3);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  animation:scrollBounce 2s infinite;
+}
+.hero-scroll::after{content:'';width:1px;height:30px;background:linear-gradient(var(--c),transparent);}
+@keyframes scrollBounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(6px);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
 
-        /* Hero: The Authority */
-        .hero { height: 90vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-        .hero-tag { font-family: var(--font-data); color: var(--accent); font-size: 0.7rem; letter-spacing: 10px; margin-bottom: 20px; text-transform: uppercase; opacity: 0.6; }
-        .hero h1 { font-family: var(--font-elite); font-size: clamp(2.5rem, 12vw, 8rem); line-height: 0.85; margin-bottom: 25px; letter-spacing: -4px; text-transform: uppercase; }
-        .hero h1 span { color: transparent; -webkit-text-stroke: 1px #fff; }
-        .hero p { max-width: 550px; color: #555; font-size: 1rem; line-height: 1.6; font-weight: 300; }
+/* ═══ TICKER ═══ */
+.ticker{
+  position:relative;z-index:2;overflow:hidden;
+  padding:12px 0;background:rgba(0,229,255,0.03);
+  border-top:1px solid rgba(0,229,255,0.07);
+  border-bottom:1px solid rgba(0,229,255,0.07);
+}
+.ticker-inner{display:flex;gap:60px;animation:tkr 35s linear infinite;white-space:nowrap;width:max-content;}
+.tk{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--t3);display:flex;align-items:center;gap:10px;}
+.tk i{color:var(--c);font-style:normal;}
+@keyframes tkr{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
-        /* Search & Ledger Section */
-        .ledger-container { padding: 60px 10%; position: relative; }
-        .search-wrap { margin-bottom: 80px; position: relative; }
-        .search-box { 
-            width: 100%; background: var(--glass); border: 1px solid var(--border); 
-            padding: 25px; color: #fff; font-family: var(--font-elite); 
-            font-size: 1.8rem; outline: none; border-radius: 4px; transition: 0.5s;
-        }
-        .search-box:focus { border-color: var(--accent); box-shadow: 0 0 40px rgba(0, 242, 255, 0.1); }
+/* ═══ STATS ═══ */
+.stats{position:relative;z-index:2;display:grid;grid-template-columns:repeat(5,1fr);}
+.stat{
+  padding:clamp(20px,4vw,40px) 20px;text-align:center;
+  border-right:1px solid rgba(0,229,255,0.06);
+  border-bottom:1px solid rgba(0,229,255,0.06);
+  position:relative;overflow:hidden;transition:background 0.3s;
+}
+.stat:last-child{border-right:none;}
+.stat:hover{background:rgba(0,229,255,0.025);}
+.stat::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:2px;background:var(--c);transition:width 0.4s;}
+.stat:hover::before{width:100%;}
+.sv{font-family:var(--disp);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--c);display:block;line-height:1;text-shadow:0 0 20px rgba(0,229,255,0.3);}
+.sl{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--t3);text-transform:uppercase;margin-top:8px;display:block;}
 
-        /* Elite Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 30px; }
-        .card { 
-            background: var(--glass); border: 1px solid var(--border); 
-            padding: 40px; position: relative; overflow: hidden; 
-            backdrop-filter: blur(15px); transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .card:hover { transform: translateY(-15px); border-color: var(--accent); background: rgba(0, 242, 255, 0.02); }
-        
-        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .id-badge { font-family: var(--font-data); font-size: 0.6rem; color: #333; }
-        .trust-score { text-align: right; }
-        .score-num { font-family: var(--font-elite); font-size: 2.2rem; color: var(--accent); line-height: 1; }
-        .score-label { font-family: var(--font-data); font-size: 0.5rem; color: #444; text-transform: uppercase; }
+/* ═══ MAIN LAYOUT ═══ */
+.main-wrap{position:relative;z-index:2;max-width:1400px;margin:0 auto;padding:0 clamp(16px,4vw,48px);}
 
-        .card h2 { font-family: var(--font-elite); font-size: 1.6rem; margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase; }
-        .card p { font-size: 0.9rem; color: #666; line-height: 1.7; margin-bottom: 30px; font-weight: 300; height: 60px; overflow: hidden; }
+/* ═══ SECTION LABEL ═══ */
+.sec-label{
+  display:flex;align-items:center;gap:12px;padding:50px 0 28px;
+}
+.sec-label-txt{font-family:var(--mono);font-size:9px;letter-spacing:4px;color:var(--c);text-transform:uppercase;white-space:nowrap;}
+.sec-label-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(0,229,255,0.2),transparent);}
 
-        /* Credo AI style Metrics */
-        .metric-row { margin-bottom: 15px; }
-        .metric-info { display: flex; justify-content: space-between; font-family: var(--font-data); font-size: 0.6rem; color: #444; margin-bottom: 5px; }
-        .bar-bg { height: 2px; width: 100%; background: #111; }
-        .bar-fill { height: 100%; background: var(--accent); transition: 2s cubic-bezier(0.1, 1, 0.1, 1); }
+/* ═══ SEARCH + FILTER ═══ */
+.search-area{margin-bottom:28px;}
+.search-box{
+  position:relative;max-width:640px;margin:0 auto 24px;
+}
+.search-input{
+  width:100%;padding:16px 52px 16px 20px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(0,229,255,0.12);
+  border-radius:var(--r);color:var(--t1);
+  font-family:var(--mono);font-size:12px;letter-spacing:1px;
+  outline:none;transition:all 0.3s;
+}
+.search-input:focus{border-color:rgba(0,229,255,0.4);background:rgba(0,229,255,0.04);box-shadow:0 0 0 4px rgba(0,229,255,0.06);}
+.search-input::placeholder{color:var(--t3);}
+.search-icon{position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:16px;pointer-events:none;}
+.cats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:24px;}
+.cat-btn{
+  font-family:var(--mono);font-size:8px;letter-spacing:2px;
+  padding:7px 14px;border:1px solid rgba(255,255,255,0.08);
+  color:var(--t3);text-transform:uppercase;cursor:pointer;
+  border-radius:20px;background:transparent;transition:all 0.2s;
+}
+.cat-btn:hover,.cat-btn.active{border-color:var(--c);color:var(--c);background:rgba(0,229,255,0.06);}
+.filter-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.filter-count{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:2px;}
+.filter-count b{color:var(--c);}
+.sort-select{
+  font-family:var(--mono);font-size:9px;padding:8px 14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:6px;color:var(--t2);outline:none;cursor:pointer;
+  transition:border-color 0.2s;
+}
+.sort-select:focus{border-color:var(--c);}
 
-        .card-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .category-tag { font-family: var(--font-data); font-size: 0.6rem; color: var(--accent); background: rgba(0, 242, 255, 0.05); padding: 4px 12px; border: 1px solid var(--border); }
+/* ═══ CARD GRID ═══ */
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:16px;padding-bottom:80px;
+}
 
-        /* Side Protocol Stream (Desktop only) */
-        .protocol-stream { position: fixed; right: 20px; bottom: 80px; width: 200px; font-family: var(--font-data); font-size: 8px; color: #222; text-transform: uppercase; line-height: 2; z-index: 100; pointer-events: none; }
+/* ═══ AI CARD ═══ */
+.ai-card{
+  background:var(--ink2);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:12px;padding:24px;
+  transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.35s,border-color 0.35s;
+  position:relative;overflow:hidden;cursor:pointer;
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+.ai-card::before{
+  content:'';position:absolute;
+  top:-1px;left:20%;right:20%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--c),transparent);
+  opacity:0;transition:opacity 0.35s;
+}
+.ai-card:hover{
+  transform:translateY(-8px) rotateX(2deg);
+  box-shadow:0 24px 48px rgba(0,0,0,0.5),0 0 0 1px rgba(0,229,255,0.15),0 0 40px rgba(0,229,255,0.06);
+  border-color:rgba(0,229,255,0.2);
+}
+.ai-card:hover::before{opacity:1;}
+.ai-card.featured{
+  background:linear-gradient(135deg,rgba(7,16,26,1),rgba(12,8,22,1));
+  border-color:rgba(191,90,242,0.15);
+}
+.ai-card.featured:hover{border-color:rgba(191,90,242,0.35);box-shadow:0 24px 48px rgba(0,0,0,0.5),0 0 40px rgba(191,90,242,0.08);}
+.feat-badge{
+  position:absolute;top:0;right:0;
+  font-family:var(--mono);font-size:7px;letter-spacing:2px;
+  padding:5px 12px;background:rgba(191,90,242,0.12);
+  color:var(--c4);border-bottom-left-radius:8px;
+  border-top-right-radius:11px;border-left:1px solid rgba(191,90,242,0.2);
+  border-bottom:1px solid rgba(191,90,242,0.2);
+}
 
-        @media (max-width: 768px) {
-            header { padding: 20px; .logo { font-size: 0.9rem; } }
-            .hero h1 { font-size: 3.5rem; letter-spacing: -2px; }
-            .ledger-container { padding: 40px 5%; }
-            .grid { grid-template-columns: 1fr; }
-            .search-box { font-size: 1.2rem; padding: 15px; }
-            .protocol-stream { display: none; }
-        }
-    </style>
+/* CARD HEADER */
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;}
+.card-id{display:flex;align-items:center;gap:12px;min-width:0;}
+.agent-icon{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--disp);font-size:1rem;font-weight:800;
+  flex-shrink:0;position:relative;
+  background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.12);
+  color:var(--c);transition:all 0.3s;
+}
+.ai-card:hover .agent-icon{transform:scale(1.05);}
+.agent-info{min-width:0;}
+.agent-name{font-family:var(--disp);font-size:0.9rem;font-weight:700;color:var(--t1);letter-spacing:0.3px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.agent-cat{font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:2px;margin-top:3px;text-transform:uppercase;}
+
+/* SCORE RING */
+.score-ring{position:relative;width:58px;height:58px;flex-shrink:0;}
+.score-ring svg{transform:rotate(-90deg);display:block;}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.05);stroke-width:3;}
+.ring-fg{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:144;stroke-dashoffset:144;transition:stroke-dashoffset 1.8s cubic-bezier(0.34,1.56,0.64,1);}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-family:var(--disp);font-size:14px;font-weight:800;line-height:1;}
+.score-lbl{font-family:var(--mono);font-size:6px;letter-spacing:1px;color:var(--t3);margin-top:1px;}
+
+/* TAGS */
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.tag{font-family:var(--mono);font-size:7px;letter-spacing:1.5px;padding:3px 8px;border-radius:4px;text-transform:uppercase;}
+.tag-default{background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.12);color:rgba(0,229,255,0.7);}
+.tag-verified{background:rgba(57,255,20,0.07);border:1px solid rgba(57,255,20,0.15);color:rgba(57,255,20,0.8);}
+.tag-caution{background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.15);color:rgba(255,214,10,0.8);}
+.tag-danger{background:rgba(255,56,100,0.07);border:1px solid rgba(255,56,100,0.15);color:rgba(255,56,100,0.8);}
+
+/* DESC */
+.card-desc{font-size:0.8rem;color:var(--t3);line-height:1.65;margin-bottom:18px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* METRICS */
+.card-metrics{margin-bottom:18px;}
+.metric{margin-bottom:9px;}
+.metric-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;color:var(--t3);letter-spacing:1px;margin-bottom:4px;}
+.metric-head span:last-child{color:var(--t2);}
+.metric-track{height:3px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden;}
+.metric-bar{height:100%;border-radius:2px;transform:scaleX(0);transform-origin:left;transition:transform 1.6s cubic-bezier(0.34,1.56,0.64,1);}
+
+/* CARD FOOTER */
+.card-footer{display:flex;gap:8px;}
+.card-btn{
+  flex:1;padding:10px 8px;text-align:center;
+  font-family:var(--mono);font-size:8px;letter-spacing:2px;
+  text-transform:uppercase;border-radius:6px;cursor:pointer;
+  transition:all 0.2s;text-decoration:none;display:block;border:none;
+}
+.card-btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--t3);}
+.card-btn-outline:hover{border-color:var(--c);color:var(--c);background:rgba(0,229,255,0.05);}
+.card-btn-fill{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);color:var(--c);}
+.card-btn-fill:hover{background:var(--c);color:var(--ink);border-color:var(--c);}
+
+/* ═══ WHY SECTION ═══ */
+.why-section{
+  position:relative;z-index:2;
+  padding:80px clamp(16px,4vw,48px);
+  border-top:1px solid rgba(255,255,255,0.04);
+}
+.why-inner{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:center;}
+.why-left h2{font-family:var(--disp);font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--t1);line-height:1.15;margin-bottom:20px;}
+.why-left h2 em{font-style:normal;color:var(--c);}
+.why-left p{font-size:0.9rem;color:var(--t2);line-height:1.9;margin-bottom:14px;font-weight:300;}
+.why-feats{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.wfeat{
+  padding:20px;border-radius:10px;
+  background:rgba(255,255,255,0.025);
+  border:1px solid rgba(255,255,255,0.04);
+  transition:all 0.3s;
+}
+.wfeat:hover{background:rgba(0,229,255,0.04);border-color:rgba(0,229,255,0.1);transform:translateY(-3px);}
+.wfeat-num{font-family:var(--disp);font-size:1.8rem;font-weight:800;color:rgba(0,229,255,0.1);display:block;margin-bottom:8px;line-height:1;}
+.wfeat-title{font-family:var(--disp);font-size:0.65rem;font-weight:700;letter-spacing:2px;color:var(--t1);margin-bottom:6px;text-transform:uppercase;}
+.wfeat-desc{font-size:0.78rem;color:var(--t3);line-height:1.6;}
+
+/* ═══ HOW SECTION ═══ */
+.how-section{
+  position:relative;z-index:2;
+  padding:80px clamp(16px,4vw,48px);
+  background:rgba(0,229,255,0.015);
+  border-top:1px solid rgba(0,229,255,0.06);
+  border-bottom:1px solid rgba(0,229,255,0.06);
+}
+.how-inner{max-width:1200px;margin:0 auto;}
+.how-title{font-family:var(--mono);font-size:9px;letter-spacing:5px;color:var(--c);text-align:center;text-transform:uppercase;margin-bottom:60px;}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;}
+.steps::before{content:'';position:absolute;top:28px;left:12.5%;right:12.5%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.3),transparent);}
+.step{text-align:center;padding:0 20px;}
+.step-icon{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--ink);border:1px solid rgba(0,229,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;
+  font-family:var(--disp);font-size:1rem;font-weight:800;color:var(--c);
+  position:relative;z-index:1;
+  box-shadow:0 0 0 6px rgba(2,5,9,1);
+}
+.step-title{font-family:var(--disp);font-size:0.7rem;font-weight:700;letter-spacing:2px;color:var(--t1);margin-bottom:8px;text-transform:uppercase;}
+.step-desc{font-size:0.78rem;color:var(--t3);line-height:1.6;}
+
+/* ═══ SUBMIT SECTION ═══ */
+.submit-section{
+  position:relative;z-index:2;
+  padding:80px clamp(16px,4vw,48px);
+  border-top:1px solid rgba(255,255,255,0.04);
+}
+.submit-inner{max-width:700px;margin:0 auto;}
+.submit-inner .sec-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:4px;color:var(--c);text-transform:uppercase;margin-bottom:14px;}
+.submit-inner h2{font-family:var(--disp);font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:var(--t1);margin-bottom:10px;}
+.submit-inner p{font-size:0.9rem;color:var(--t2);margin-bottom:36px;line-height:1.7;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{margin-bottom:14px;}
+.form-group label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:rgba(0,229,255,0.7);display:block;margin-bottom:7px;text-transform:uppercase;}
+.form-input{
+  width:100%;padding:13px 16px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:var(--r);color:var(--t1);
+  font-family:var(--body);font-size:13px;
+  outline:none;transition:all 0.3s;
+}
+.form-input:focus{border-color:rgba(0,229,255,0.35);background:rgba(0,229,255,0.04);box-shadow:0 0 0 3px rgba(0,229,255,0.06);}
+.form-input::placeholder{color:var(--t3);}
+.btn-submit-form{
+  font-family:var(--mono);font-size:10px;letter-spacing:3px;
+  padding:15px 44px;background:var(--c);color:var(--ink);
+  border:none;border-radius:var(--r);cursor:pointer;font-weight:700;
+  text-transform:uppercase;transition:all 0.3s;margin-top:8px;
+}
+.btn-submit-form:hover{background:#fff;box-shadow:0 8px 30px rgba(0,229,255,0.35);transform:translateY(-2px);}
+#form-msg{font-family:var(--mono);font-size:9px;margin-top:14px;letter-spacing:2px;}
+
+/* ═══ FOOTER ═══ */
+footer{
+  position:relative;z-index:2;
+  border-top:1px solid rgba(255,255,255,0.05);
+  padding:60px clamp(16px,4vw,48px) 36px;
+}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:50px;max-width:1400px;margin:0 auto 48px;}
+.footer-brand-name{font-family:var(--disp);font-size:16px;font-weight:800;color:var(--t1);letter-spacing:1px;display:block;margin-bottom:12px;}
+.footer-brand-name span{color:var(--c);}
+.footer-desc{font-size:0.82rem;color:var(--t3);line-height:1.8;font-weight:300;}
+.footer-col h4{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--c);text-transform:uppercase;margin-bottom:14px;}
+.footer-col a{display:block;font-size:0.82rem;color:var(--t3);text-decoration:none;margin-bottom:9px;transition:color 0.2s;}
+.footer-col a:hover{color:var(--t1);}
+.footer-bottom{max-width:1400px;margin:0 auto;border-top:1px solid rgba(255,255,255,0.04);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.footer-bottom p{font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:2px;}
+.footer-bottom span{color:var(--c);}
+
+/* ═══ MODAL ═══ */
+.modal-wrap{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.modal-wrap.open{opacity:1;pointer-events:all;}
+.modal-bg{position:absolute;inset:0;background:rgba(2,5,9,0.88);backdrop-filter:blur(16px);}
+.modal-box{
+  position:relative;z-index:1;background:var(--ink2);
+  border:1px solid rgba(0,229,255,0.12);border-radius:16px;
+  max-width:640px;width:100%;max-height:85svh;overflow-y:auto;padding:40px;
+  transform:scale(0.95) translateY(10px);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-wrap.open .modal-box{transform:scale(1) translateY(0);}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.06);border:none;color:var(--t3);cursor:pointer;font-size:14px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:rgba(255,255,255,0.1);color:var(--t1);}
+.modal-eyebrow{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--c);text-transform:uppercase;margin-bottom:10px;}
+.modal-title{font-family:var(--disp);font-size:1.5rem;font-weight:800;color:var(--t1);margin-bottom:24px;}
+.modal-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.modal-metric{padding:16px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);text-align:center;}
+.mm-val{font-family:var(--disp);font-size:1.6rem;font-weight:800;display:block;}
+.mm-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--t3);margin-top:4px;display:block;}
+.modal-desc{font-size:0.88rem;color:var(--t2);line-height:1.9;margin-bottom:24px;}
+.modal-link{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:12px 28px;border-radius:8px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);color:var(--c);text-decoration:none;text-transform:uppercase;transition:all 0.2s;}
+.modal-link:hover{background:var(--c);color:var(--ink);font-weight:700;}
+
+/* ═══ LOADER ═══ */
+#loader{
+  grid-column:1/-1;text-align:center;padding:80px;
+  font-family:var(--mono);font-size:10px;letter-spacing:4px;color:var(--c);
+}
+.ld-ring{width:40px;height:40px;border:2px solid rgba(0,229,255,0.15);border-top-color:var(--c);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{grid-column:1/-1;text-align:center;padding:80px;font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:3px;}
+.empty-state i{font-style:normal;font-size:2.5rem;display:block;margin-bottom:16px;opacity:0.15;}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1100px){
+  .stats{grid-template-columns:repeat(3,1fr);}
+  .stat:nth-child(4){border-top:1px solid rgba(0,229,255,0.06);}
+  .why-inner{grid-template-columns:1fr;gap:50px;}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:768px){
+  header{padding:0 16px;}
+  .nav{display:none;}
+  .logo-txt{font-size:13px;}
+  .stats{grid-template-columns:1fr 1fr;}
+  .stat:nth-child(5){display:none;}
+  .card-grid{grid-template-columns:1fr;}
+  .steps{grid-template-columns:1fr 1fr;gap:30px;}
+  .steps::before{display:none;}
+  .form-row{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr;}
+  .footer-bottom{flex-direction:column;align-items:flex-start;}
+  .modal-metrics{grid-template-columns:1fr 1fr;}
+  .modal-box{padding:28px;}
+}
+@media(max-width:420px){
+  .hero-title{letter-spacing:-1px;}
+  .stats{grid-template-columns:1fr 1fr;}
+  .cat-btn{padding:6px 10px;font-size:7px;}
+}
+</style>
 </head>
 <body>
 
-<canvas id="neural-canvas"></canvas>
+<canvas id="bg-canvas"></canvas>
+<div class="grain"></div>
 
-<div class="protocol-stream" id="protocol-stream">
-    >> SYNCING DATASET...<br>
-    >> AUDITING CORE NODES...<br>
-    >> CLAUDE 3.5: VERIFIED<br>
-    >> GPT-4o: REPUTATION 98%<br>
-    >> SYSTEM INTEGRITY: 100%<br>
-    >> SOVEREIGN LAYER ACTIVE...
-</div>
-
-<header>
-    <a href="#" class="logo">NODE <span>THE FUTURE</span></a>
-    <div class="status-pill">PROTOCOL: ACTIVE</div>
+<!-- HEADER -->
+<header id="hdr">
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg viewBox="0 0 32 32" fill="none">
+        <polygon class="lm-outer" points="16,2 30,10 30,22 16,30 2,22 2,10"/>
+        <polygon class="lm-inner" points="16,8 24,13 24,21 16,26 8,21 8,13" fill="rgba(0,229,255,0.15)" stroke="rgba(0,229,255,0.4)" stroke-width="0.5"/>
+        <circle cx="16" cy="16" r="3" fill="#00e5ff" opacity="0.9"/>
+      </svg>
+    </div>
+    <span class="logo-txt">NODE <span>THE</span> FUTURE</span>
+  </a>
+  <nav class="nav">
+    <a href="#directory">Directory</a>
+    <a href="#protocol">Protocol</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#submit">Submit AI</a>
+  </nav>
+  <div class="hdr-right">
+    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+    <a href="#submit" class="btn-cta">+ Add AI</a>
+  </div>
 </header>
 
+<!-- HERO -->
 <section class="hero">
-    <div class="hero-tag">// Sovereign Intelligence Audit v9.4</div>
-    <h1>NOD<span>THE</span>FUTURE</h1>
-    <p>The global supreme authority for AI reputation and sovereign trust. We analyze, verify, and benchmark every autonomous entity for human-agent alignment.</p>
+  <div class="hero-globe"><canvas id="globe-canvas"></canvas></div>
+  <div class="hero-eyebrow">// Global Intelligence Directory · Est. 2026</div>
+  <h1 class="hero-title">
+    <span class="t-white">Every AI.</span>
+    <span class="t-glow">Scored.</span>
+    <span class="t-outline">Node The Future · Trust Protocol v2.0 · Built for 2040</span>
+  </h1>
+  <p class="hero-desc">
+    The world's first open reputation layer for AI tools, agents, and models.
+    Before you deploy, integrate, or trust any AI — check its Node score first.
+  </p>
+  <div class="hero-actions">
+    <a href="#directory" class="btn-primary">Explore Directory</a>
+    <a href="#protocol" class="btn-secondary">Learn Protocol</a>
+  </div>
+  <div class="hero-scroll">SCROLL</div>
 </section>
 
-<div class="ledger-container" id="ledger">
-    <div class="search-wrap">
-        <input type="text" id="search" class="search-box" placeholder="ACCESS AGENT LEDGER...">
-    </div>
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker">
+    <div class="tk"><i>◈</i> NODE THE FUTURE — AI TRUST PROTOCOL V2.0</div>
+    <div class="tk"><i>◈</i> VERIFICATION ENGINE ONLINE</div>
+    <div class="tk"><i>◈</i> GLOBAL AI REPUTATION NETWORK ACTIVE</div>
+    <div class="tk"><i>◈</i> SAFETY ANALYSIS RUNNING</div>
+    <div class="tk"><i>◈</i> <span id="tcnt">—</span> AGENTS INDEXED</div>
+    <div class="tk"><i>◈</i> TRUST SCORES UPDATED REAL-TIME</div>
+    <div class="tk"><i>◈</i> QUANTUM VERIFICATION LAYER ONLINE</div>
+    <div class="tk"><i>◈</i> NODE THE FUTURE — AI TRUST PROTOCOL V2.0</div>
+    <div class="tk"><i>◈</i> VERIFICATION ENGINE ONLINE</div>
+    <div class="tk"><i>◈</i> GLOBAL AI REPUTATION NETWORK ACTIVE</div>
+    <div class="tk"><i>◈</i> SAFETY ANALYSIS RUNNING</div>
+    <div class="tk"><i>◈</i> — AGENTS INDEXED</div>
+    <div class="tk"><i>◈</i> TRUST SCORES UPDATED REAL-TIME</div>
+    <div class="tk"><i>◈</i> QUANTUM VERIFICATION LAYER ONLINE</div>
+  </div>
+</div>
 
-    <div class="grid" id="agent-grid">
-        <p style="font-family: var(--font-data); font-size: 12px; color: #222; text-align: center; grid-column: 1/-1;">INITIALIZING NEURAL LINK...</p>
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><span class="sv" id="sa">—</span><span class="sl">Agents Indexed</span></div>
+  <div class="stat"><span class="sv">99.7%</span><span class="sl">System Uptime</span></div>
+  <div class="stat"><span class="sv" id="sc">—</span><span class="sl">Categories</span></div>
+  <div class="stat"><span class="sv">2040</span><span class="sl">Vision Horizon</span></div>
+  <div class="stat"><span class="sv">v2.0</span><span class="sl">Protocol</span></div>
+</div>
+
+<!-- DIRECTORY -->
+<section id="directory">
+  <div class="main-wrap">
+    <div class="sec-label"><span class="sec-label-txt">// AI Agent Directory</span><div class="sec-label-line"></div></div>
+    <div class="search-area">
+      <div class="search-box">
+        <input type="text" class="search-input" id="sq" placeholder="Search agents, tools, models...">
+        <span class="search-icon">⌕</span>
+      </div>
+      <div class="cats" id="cats">
+        <button class="cat-btn active" data-c="all">All</button>
+        <button class="cat-btn" data-c="llm">LLM</button>
+        <button class="cat-btn" data-c="image">Image AI</button>
+        <button class="cat-btn" data-c="code">Code AI</button>
+        <button class="cat-btn" data-c="agent">AI Agents</button>
+        <button class="cat-btn" data-c="voice">Voice</button>
+        <button class="cat-btn" data-c="video">Video</button>
+        <button class="cat-btn" data-c="research">Research</button>
+        <button class="cat-btn" data-c="productivity">Productivity</button>
+      </div>
+      <div class="filter-row">
+        <div class="filter-count">Showing <b id="cnt">—</b> agents</div>
+        <select class="sort-select" id="ss">
+          <option value="trust">↓ Trust Score</option>
+          <option value="safety">↓ Safety Index</option>
+          <option value="name">A–Z Name</option>
+        </select>
+      </div>
     </div>
+    <div class="card-grid" id="grid">
+      <div id="loader"><div class="ld-ring"></div>Connecting to Node Network...</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY SECTION -->
+<section class="why-section" id="protocol">
+  <div class="why-inner">
+    <div class="why-left">
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:4px;color:var(--c);margin-bottom:16px;text-transform:uppercase;">// Why Node The Future</div>
+      <h2>The Internet Needs An <em>AI Trust Layer</em></h2>
+      <p>By 2040, billions of autonomous AI agents will operate across finance, healthcare, infrastructure, and daily life. Most will be unverified, untested, and unknown.</p>
+      <p>Node The Future is the open standard for AI reputation — scoring every AI on safety, transparency, alignment, and behavioral consistency.</p>
+      <a href="#directory" class="btn-primary" style="display:inline-block;margin-top:24px;">Browse All Agents</a>
+    </div>
+    <div class="why-feats">
+      <div class="wfeat"><span class="wfeat-num">01</span><div class="wfeat-title">Trust Scoring</div><div class="wfeat-desc">Multi-dimensional reputation scores based on safety, transparency, alignment, and behavioral history.</div></div>
+      <div class="wfeat"><span class="wfeat-num">02</span><div class="wfeat-title">Safety Index</div><div class="wfeat-desc">Continuous behavioral monitoring to detect drift from declared intent and flag dangerous patterns.</div></div>
+      <div class="wfeat"><span class="wfeat-num">03</span><div class="wfeat-title">Open Protocol</div><div class="wfeat-desc">Transparent, community-audited methodology. No hidden weights. No black-box decisions ever.</div></div>
+      <div class="wfeat"><span class="wfeat-num">04</span><div class="wfeat-title">Trust API</div><div class="wfeat-desc">Integrate Node scores directly into your platform or infrastructure via the open Trust API.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how-it-works">
+  <div class="how-inner">
+    <p class="how-title">// How The Trust Protocol Works</p>
+    <div class="steps">
+      <div class="step"><div class="step-icon">01</div><div class="step-title">Submit</div><div class="step-desc">Any AI tool, model, or agent can be submitted to the Node directory for evaluation.</div></div>
+      <div class="step"><div class="step-icon">02</div><div class="step-title">Analyze</div><div class="step-desc">Our protocol evaluates safety, transparency, alignment, capability, and behavioral consistency.</div></div>
+      <div class="step"><div class="step-icon">03</div><div class="step-title">Score</div><div class="step-desc">Each AI receives a Trust Score (0–100) and Safety Index, updated continuously as new data emerges.</div></div>
+      <div class="step"><div class="step-icon">04</div><div class="step-title">Publish</div><div class="step-desc">Scores go public. Humans and platforms query trust data via the open Node Trust API.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SUBMIT -->
+<section class="submit-section" id="submit">
+  <div class="submit-inner">
+    <p class="sec-eyebrow">// Submit An AI Agent</p>
+    <h2>Add Your AI To The Directory</h2>
+    <p>Know an AI tool that deserves a trust score? Submit it to the Node network for evaluation and listing.</p>
+    <form id="sf">
+      <div class="form-row">
+        <div class="form-group"><label>Agent / Tool Name *</label><input type="text" class="form-input" placeholder="e.g. ChatGPT, Claude..." id="fn"></div>
+        <div class="form-group"><label>Category *</label><select class="form-input" id="fcat"><option value="">Select category...</option><option>LLM</option><option>Image AI</option><option>Code AI</option><option>AI Agent</option><option>Voice AI</option><option>Video AI</option><option>Research</option><option>Productivity</option><option>Other</option></select></div>
+      </div>
+      <div class="form-group"><label>Official URL</label><input type="url" class="form-input" placeholder="https://..." id="fu"></div>
+      <div class="form-group"><label>Brief Description</label><input type="text" class="form-input" placeholder="What does this AI do?" id="fd"></div>
+      <button type="submit" class="btn-submit-form">Submit For Evaluation →</button>
+      <div id="form-msg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <span class="footer-brand-name">NODE <span>THE</span> FUTURE</span>
+      <p class="footer-desc">The world's first open AI trust protocol and intelligence directory. Every AI, scored, verified, and ranked. Built for 2026. Designed for 2040.</p>
+    </div>
+    <div class="footer-col"><h4>Directory</h4><a href="#directory">All Agents</a><a href="#directory">LLM Models</a><a href="#directory">AI Agents</a><a href="#directory">Image AI</a><a href="#directory">Code AI</a></div>
+    <div class="footer-col"><h4>Protocol</h4><a href="#protocol">About Node</a><a href="#how-it-works">How It Works</a><a href="#submit">Submit AI</a><a href="#">Trust API</a></div>
+    <div class="footer-col"><h4>Connect</h4><a href="#">Twitter / X</a><a href="#">LinkedIn</a><a href="#">GitHub</a><a href="#">Contact</a></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026–2040 <span>NODE THE FUTURE</span> · AXIOM TRUST PROTOCOL · ALL RIGHTS RESERVED</p>
+    <p>BUILT FOR THE AGE OF <span>AUTONOMOUS INTELLIGENCE</span></p>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-wrap" id="modal">
+  <div class="modal-bg" id="mBg"></div>
+  <div class="modal-box">
+    <button class="modal-close" id="mClose">✕</button>
+    <div id="mBody"></div>
+  </div>
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://dmfpnkyiqybzfpzwnvtc.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC'; 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* ═══ WEBGL BACKGROUND SHADER ═══ */
+(function(){
+  const c=document.getElementById('bg-canvas');
+  const gl=c.getContext('webgl');
+  if(!gl)return;
+  function resize(){c.width=innerWidth;c.height=innerHeight;gl.viewport(0,0,c.width,c.height);}
+  resize();window.addEventListener('resize',resize);
+  const vs=`attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
+  const fs=`
+  precision mediump float;
+  uniform float t;uniform vec2 res;
+  void main(){
+    vec2 uv=(gl_FragCoord.xy/res)*2.-1.;
+    float d=length(uv);
+    float grid=mod(uv.x*20.+t*.05,1.)*mod(uv.y*20.+t*.03,1.);
+    float glow=0.0008/max(d-.6,0.001);
+    vec3 col=vec3(0.0,0.12,0.16)*glow;
+    col+=vec3(0.,0.06,0.09)*step(0.98,mod(uv.x*25.+t*.04,1.));
+    col+=vec3(0.,0.06,0.09)*step(0.98,mod(uv.y*25.+t*.03,1.));
+    gl_FragColor=vec4(col,1.);
+  }`;
+  function mk(t,s){const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;}
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,vs));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fs));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const pa=gl.getAttribLocation(prog,'p');
+  gl.enableVertexAttribArray(pa);
+  gl.vertexAttribPointer(pa,2,gl.FLOAT,false,0,0);
+  const tU=gl.getUniformLocation(prog,'t');
+  const rU=gl.getUniformLocation(prog,'res');
+  function draw(ts){
+    gl.uniform1f(tU,ts*.001);
+    gl.uniform2f(rU,c.width,c.height);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
 
-    let allAgents = [];
+/* ═══ 3D GLOBE ═══ */
+(function(){
+  const c=document.getElementById('globe-canvas');
+  const W=Math.min(700,window.innerWidth*1.1);
+  c.width=W;c.height=W;
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(45,1,0.1,100);
+  camera.position.z=2.8;
+  const renderer=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  renderer.setSize(W,W);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  // Wireframe globe
+  const geo=new THREE.SphereGeometry(1,48,48);
+  const mat=new THREE.MeshBasicMaterial({color:0x00e5ff,wireframe:true,opacity:0.12,transparent:true});
+  const globe=new THREE.Mesh(geo,mat);
+  scene.add(globe);
+  // Glow rings
+  for(let i=0;i<3;i++){
+    const r=new THREE.RingGeometry(1.02+i*0.08,1.025+i*0.08,128);
+    const rm=new THREE.MeshBasicMaterial({color:0x00e5ff,side:THREE.DoubleSide,opacity:0.06-i*0.01,transparent:true});
+    const ring=new THREE.Mesh(r,rm);
+    ring.rotation.x=Math.PI*(0.3+i*0.15);
+    ring.rotation.y=Math.PI*(0.2+i*0.1);
+    scene.add(ring);
+  }
+  // Nodes on globe
+  const nodeMat=new THREE.MeshBasicMaterial({color:0x00e5ff});
+  for(let i=0;i<80;i++){
+    const phi=Math.acos(-1+2*i/80);
+    const theta=Math.sqrt(80*Math.PI)*phi;
+    const ng=new THREE.SphereGeometry(0.012,8,8);
+    const nm=new THREE.Mesh(ng,nodeMat);
+    nm.position.setFromSphericalCoords(1,phi,theta);
+    globe.add(nm);
+  }
+  // Connection lines
+  const pts=[];
+  for(let i=0;i<20;i++){
+    const a=new THREE.Vector3().setFromSphericalCoords(1,Math.random()*Math.PI,Math.random()*Math.PI*2);
+    const b=new THREE.Vector3().setFromSphericalCoords(1,Math.random()*Math.PI,Math.random()*Math.PI*2);
+    pts.push(a,b);
+    const lg=new THREE.BufferGeometry().setFromPoints([a,b]);
+    const lm=new THREE.LineBasicMaterial({color:0x00e5ff,opacity:0.06,transparent:true});
+    scene.add(new THREE.Line(lg,lm));
+  }
+  let mx=0,my=0;
+  document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*0.5;my=(e.clientY/innerHeight-.5)*0.5;});
+  function animate(){
+    requestAnimationFrame(animate);
+    globe.rotation.y+=0.002;globe.rotation.x+=0.0005;
+    globe.rotation.y+=(mx-globe.rotation.y)*0.02;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
 
-    async function fetchAgents() {
-        try {
-            const { data, error } = await _supabase.from('ai_agents').select('*').order('trust_scor', { ascending: false });
-            if (error) throw error;
-            allAgents = data;
-            renderAgents(allAgents);
-        } catch (err) { console.error(err); }
-    }
+/* ═══ SUPABASE ═══ */
+const SB=supabase.createClient('https://dmfpnkyiqybzfpzwnvtc.supabase.co','sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC');
 
-    function renderAgents(list) {
-        const grid = document.getElementById('agent-grid');
-        grid.innerHTML = '';
-        list.forEach((agent, i) => {
-            const score = agent.trust_scor || 0;
-            const safety = agent.safety_ind || 0;
-            grid.innerHTML += `
-                <div class="card" onclick="window.open('${agent.url}', '_blank')">
-                    <div class="card-top">
-                        <div class="id-badge">NOD-2040-SVRGN-${100+i}</div>
-                        <div class="trust-score">
-                            <div class="score-num">${score}</div>
-                            <div class="score-label">Trust Index</div>
-                        </div>
-                    </div>
-                    <h2>${agent.name}</h2>
-                    <p>${agent.description || 'Behavioral pattern analysis ongoing. Safety markers verified by NOD Sovereign Protocol.'}</p>
-                    
-                    <div class="metric-row">
-                        <div class="metric-info"><span>Safety Alignment</span><span>${safety}%</span></div>
-                        <div class="bar-bg"><div class="bar-fill" style="width: ${safety}%"></div></div>
-                    </div>
-                    <div class="metric-row">
-                        <div class="metric-info"><span>Transparency Score</span><span>${Math.floor(score * 0.9)}%</span></div>
-                        <div class="bar-bg"><div class="bar-fill" style="width: ${Math.floor(score * 0.9)}%; background: #7b61ff;"></div></div>
-                    </div>
+let agents=[],actCat='all',actQ='',actSort='trust';
 
-                    <div class="card-footer">
-                        <div class="category-tag">${agent.category}</div>
-                        <div style="font-family: var(--font-data); font-size: 8px; color: #222;">VERIFIED AUDIT</div>
-                    </div>
-                </div>
-            `;
-        });
-    }
+function scoreColor(s){return s>=80?'#39ff14':s>=60?'#00e5ff':s>=40?'#ffd60a':'#ff3864';}
+function initials(n){return(n||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
 
-    document.getElementById('search').addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        renderAgents(allAgents.filter(a => a.name.toLowerCase().includes(val)));
-    });
+function buildCard(a,gi){
+  const nm=a.name||'Unknown',sc=parseInt(a.trust_scor)||0,sf=parseInt(a.safety_ind)||0,
+    cat=a.category||'AI Tool',url=a.url||'#',
+    desc=a.description||'Advanced AI system evaluated by the Node Trust Protocol.',
+    clr=scoreColor(sc),feat=sc>=85,
+    circ=144,off=circ-(sc/100)*circ;
+  return`<div class="ai-card${feat?' featured':''}" data-gi="${gi}" onclick="openModal(${gi})" style="animation:fadeUp 0.5s ${(gi%12)*0.05}s both;">
+    ${feat?'<div class="feat-badge">◈ FEATURED</div>':''}
+    <div class="card-header">
+      <div class="card-id">
+        <div class="agent-icon" style="color:${clr};background:${clr}12;border-color:${clr}22;">${initials(nm)}</div>
+        <div class="agent-info">
+          <div class="agent-name">${nm}</div>
+          <div class="agent-cat">${cat.toUpperCase()}</div>
+        </div>
+      </div>
+      <div class="score-ring">
+        <svg width="58" height="58" viewBox="0 0 58 58">
+          <circle class="ring-bg" cx="29" cy="29" r="23"/>
+          <circle class="ring-fg" cx="29" cy="29" r="23" stroke="${clr}" style="stroke-dashoffset:${off};"/>
+        </svg>
+        <div class="score-inner"><span class="score-num" style="color:${clr}">${sc}</span><span class="score-lbl">TRUST</span></div>
+      </div>
+    </div>
+    <div class="card-tags">
+      <span class="tag tag-default">${cat}</span>
+      ${sc>=70?'<span class="tag tag-verified">◈ Verified</span>':''}
+      ${sc<50&&sc>0?'<span class="tag tag-caution">⚠ Caution</span>':''}
+    </div>
+    <div class="card-desc">${desc}</div>
+    <div class="card-metrics">
+      <div class="metric">
+        <div class="metric-head"><span>Safety Index</span><span>${sf}%</span></div>
+        <div class="metric-track"><div class="metric-bar" style="width:${sf}%;background:linear-gradient(90deg,${clr},${scoreColor(sf)});"></div></div>
+      </div>
+      <div class="metric">
+        <div class="metric-head"><span>Trust Score</span><span>${sc}/100</span></div>
+        <div class="metric-track"><div class="metric-bar" style="width:${sc}%;background:linear-gradient(90deg,${clr},#00e5ff);"></div></div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <button class="card-btn card-btn-outline" onclick="event.stopPropagation();openModal(${gi})">Details</button>
+      <a href="${url}" target="_blank" rel="noopener" class="card-btn card-btn-fill" onclick="event.stopPropagation()">Access →</a>
+    </div>
+  </div>`;
+}
 
-    // Elite Three.js Background
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('neural-canvas'), alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+function render(list){
+  const g=document.getElementById('grid');
+  document.getElementById('loader').style.display='none';
+  document.getElementById('cnt').textContent=list.length;
+  if(!list.length){g.innerHTML='<div class="empty-state"><i>◈</i>No agents match current filters</div>';return;}
+  g.innerHTML=list.map((a,i)=>buildCard(a,agents.indexOf(a))).join('');
+  setTimeout(()=>document.querySelectorAll('.metric-bar').forEach(b=>b.style.transform='scaleX(1)'),200);
+}
 
-    const starGeo = new THREE.BufferGeometry();
-    const starCoords = [];
-    for (let i = 0; i < 4000; i++) {
-        starCoords.push(THREE.MathUtils.randFloatSpread(1500), THREE.MathUtils.randFloatSpread(1500), THREE.MathUtils.randFloatSpread(1500));
-    }
-    starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
-    const starMat = new THREE.PointsMaterial({ color: 0x00f2ff, size: 1.2, transparent: true, opacity: 0.5 });
-    const stars = new THREE.Points(starGeo, starMat);
-    scene.add(stars);
+function filter(){
+  let l=[...agents];
+  if(actCat!=='all')l=l.filter(a=>(a.category||'').toLowerCase().includes(actCat));
+  if(actQ){const q=actQ.toLowerCase();l=l.filter(a=>(a.name||'').toLowerCase().includes(q)||(a.category||'').toLowerCase().includes(q));}
+  if(actSort==='trust')l.sort((a,b)=>(b.trust_scor||0)-(a.trust_scor||0));
+  else if(actSort==='safety')l.sort((a,b)=>(b.safety_ind||0)-(a.safety_ind||0));
+  else l.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  render(l);
+}
 
-    camera.position.z = 800;
+async function loadAgents(){
+  try{
+    const{data,error}=await SB.from('ai_agents').select('*');
+    if(error)throw error;
+    agents=data||[];
+    const n=agents.length;
+    document.getElementById('sa').textContent=n;
+    document.getElementById('tcnt').textContent=n;
+    const cats=new Set(agents.map(a=>a.category).filter(Boolean));
+    document.getElementById('sc').textContent=cats.size||0;
+    filter();
+  }catch(e){
+    document.getElementById('loader').innerHTML='<span style="font-family:var(--mono);font-size:10px;color:#ff3864;letter-spacing:2px;">⚠ Connection error — check back soon</span>';
+  }
+}
 
-    function animate() {
-        requestAnimationFrame(animate);
-        stars.rotation.y += 0.0004;
-        stars.rotation.x += 0.0002;
-        renderer.render(scene, camera);
-    }
-    animate();
+/* MODAL */
+function openModal(i){
+  const a=agents[i];if(!a)return;
+  const sc=parseInt(a.trust_scor)||0,sf=parseInt(a.safety_ind)||0,clr=scoreColor(sc);
+  document.getElementById('mBody').innerHTML=`
+    <div class="modal-eyebrow">${(a.category||'AI Tool').toUpperCase()} · NODE TRUST PROTOCOL</div>
+    <div class="modal-title">${a.name||'Unknown Agent'}</div>
+    <div class="modal-metrics">
+      <div class="modal-metric"><span class="mm-val" style="color:${clr}">${sc}</span><span class="mm-lbl">TRUST SCORE</span></div>
+      <div class="modal-metric"><span class="mm-val" style="color:#39ff14">${sf}%</span><span class="mm-lbl">SAFETY INDEX</span></div>
+      <div class="modal-metric"><span class="mm-val" style="color:#bf5af2">${sc>=70?'✓ YES':'✗ NO'}</span><span class="mm-lbl">VERIFIED</span></div>
+    </div>
+    <p class="modal-desc">${a.description||'This AI agent has been evaluated by the Node Trust Protocol and assigned a reputation score based on safety, transparency, alignment, and behavioral consistency metrics.'}</p>
+    ${a.url&&a.url!=='#'?`<a href="${a.url}" target="_blank" rel="noopener" class="modal-link">Access Agent →</a>`:''}
+  `;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.getElementById('mClose').onclick=closeModal;
+document.getElementById('mBg').onclick=closeModal;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
-    window.onresize = () => {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-    };
+/* EVENTS */
+document.getElementById('sq').addEventListener('input',e=>{actQ=e.target.value.trim();filter();});
+document.querySelectorAll('.cat-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');actCat=b.dataset.c;filter();
+  });
+});
+document.getElementById('ss').addEventListener('change',e=>{actSort=e.target.value;filter();});
 
-    window.onload = fetchAgents;
+/* SUBMIT */
+document.getElementById('sf').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const nm=document.getElementById('fn').value.trim(),
+    cat=document.getElementById('fcat').value,
+    url=document.getElementById('fu').value.trim(),
+    desc=document.getElementById('fd').value.trim(),
+    msg=document.getElementById('form-msg');
+  if(!nm||!cat){msg.style.color='#ff3864';msg.textContent='⚠ Please fill required fields';return;}
+  msg.style.color='#00e5ff';msg.textContent='⟳ Submitting to Node Network...';
+  try{
+    const{error}=await SB.from('ai_agents').insert([{name:nm,category:cat,url,description:desc,trust_scor:0,safety_ind:0}]);
+    if(error)throw error;
+    msg.style.color='#39ff14';msg.textContent='◈ Submitted — Evaluation pending. Thank you!';
+    document.getElementById('sf').reset();loadAgents();
+  }catch(err){
+    msg.style.color='#ffd60a';msg.textContent='⚠ Queued for manual review. Thank you!';
+  }
+});
+
+/* SCROLL HEADER EFFECT */
+window.addEventListener('scroll',()=>{
+  document.getElementById('hdr').style.background=
+    window.scrollY>50?'rgba(2,5,9,0.95)':'rgba(2,5,9,0.7)';
+},{ passive:true });
+
+/* INIT */
+loadAgents();
 </script>
-
 </body>
 </html>
