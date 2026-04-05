@@ -3,99 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NODE THE FUTURE | Supreme Intelligence Layer</title>
+    <title>NODE THE FUTURE | Supreme Intelligence Sovereign</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&family=Space+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono&family=Syne:wght@800&family=Inter:wght@200;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         :root {
-            --cyan: #00f2ff;
-            --bg: #030708;
-            --card: rgba(255, 255, 255, 0.03);
-            --border: rgba(0, 242, 255, 0.1);
-            --font: 'Plus Jakarta Sans', sans-serif;
-            --mono: 'Space Mono', monospace;
+            --accent: #00f2ff;
+            --bg: #000000;
+            --border: rgba(0, 242, 255, 0.15);
+            --glass: rgba(255, 255, 255, 0.02);
+            --font-elite: 'Syne', sans-serif;
+            --font-data: 'Space Mono', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: var(--font); overflow-x: hidden; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
 
-        #neural-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.3; }
+        /* background grid effect */
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px; z-index: -1; opacity: 0.2;
+        }
 
-        /* Sleek Header */
+        #neural-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; opacity: 0.4; }
+
+        /* Sovereign Header */
         header { 
-            position: fixed; width: 100%; padding: 15px 25px; 
+            position: fixed; width: 100%; padding: 25px 40px; 
             display: flex; justify-content: space-between; align-items: center; 
-            z-index: 1000; background: rgba(3, 7, 8, 0.8); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            z-index: 1000; backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
         }
-        .logo { font-weight: 800; font-size: 0.9rem; letter-spacing: 3px; color: #fff; text-decoration: none; text-transform: uppercase; }
-        .logo span { color: var(--cyan); }
-        .status-pill { font-family: var(--mono); font-size: 10px; color: var(--cyan); border: 1px solid var(--cyan); padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 6px; }
-        .dot { width: 4px; height: 4px; background: var(--cyan); border-radius: 50%; animation: pulse 2s infinite; }
+        .logo { font-family: var(--font-elite); font-size: 1.2rem; letter-spacing: 4px; color: #fff; text-decoration: none; text-transform: uppercase; }
+        .logo span { color: var(--accent); text-shadow: 0 0 15px var(--accent); }
+        .status-pill { font-family: var(--font-data); font-size: 10px; color: var(--accent); padding: 5px 12px; border: 1px solid var(--accent); border-radius: 2px; letter-spacing: 2px; }
 
-        /* Hero: The Sophisticated Intro */
-        .hero { height: 70vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-        .hero h1 { font-size: clamp(2.2rem, 10vw, 5rem); font-weight: 800; line-height: 1.1; margin-bottom: 15px; letter-spacing: -1px; }
-        .hero p { max-width: 450px; color: #6d7d85; font-size: 0.9rem; line-height: 1.6; font-weight: 400; }
+        /* Hero: The Authority */
+        .hero { height: 90vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        .hero-tag { font-family: var(--font-data); color: var(--accent); font-size: 0.7rem; letter-spacing: 10px; margin-bottom: 20px; text-transform: uppercase; opacity: 0.6; }
+        .hero h1 { font-family: var(--font-elite); font-size: clamp(2.5rem, 12vw, 8rem); line-height: 0.85; margin-bottom: 25px; letter-spacing: -4px; text-transform: uppercase; }
+        .hero h1 span { color: transparent; -webkit-text-stroke: 1px #fff; }
+        .hero p { max-width: 550px; color: #555; font-size: 1rem; line-height: 1.6; font-weight: 300; }
 
-        /* Search Section - High Authority */
-        .directory-section { padding: 40px 20px 100px; max-width: 1200px; margin: auto; }
-        .search-container { position: relative; margin-bottom: 50px; }
-        .search-input { 
-            width: 100%; background: rgba(255, 255, 255, 0.02); 
-            border: 1px solid var(--border); padding: 20px 25px; 
-            border-radius: 12px; color: #fff; font-size: 1rem; 
-            outline: none; transition: 0.4s; font-family: var(--font);
+        /* Search & Ledger Section */
+        .ledger-container { padding: 60px 10%; position: relative; }
+        .search-wrap { margin-bottom: 80px; position: relative; }
+        .search-box { 
+            width: 100%; background: var(--glass); border: 1px solid var(--border); 
+            padding: 25px; color: #fff; font-family: var(--font-elite); 
+            font-size: 1.8rem; outline: none; border-radius: 4px; transition: 0.5s;
         }
-        .search-input:focus { border-color: var(--cyan); box-shadow: 0 0 30px rgba(0, 242, 255, 0.05); }
+        .search-box:focus { border-color: var(--accent); box-shadow: 0 0 40px rgba(0, 242, 255, 0.1); }
 
-        /* Filter Chips */
-        .filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 20px; margin-bottom: 20px; scrollbar-width: none; }
-        .filters::-webkit-scrollbar { display: none; }
-        .pill { 
-            white-space: nowrap; padding: 8px 18px; border-radius: 8px; 
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-            font-size: 11px; font-weight: 500; color: #6d7d85; cursor: pointer; transition: 0.3s;
-        }
-        .pill.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 242, 255, 0.05); }
-
-        /* Grid & Credo-Style Cards */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        /* Elite Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 30px; }
         .card { 
-            background: var(--card); border: 1px solid var(--border); 
-            padding: 25px; border-radius: 16px; position: relative; 
-            transition: 0.4s cubic-bezier(0.2, 0, 0, 1); backdrop-filter: blur(10px);
+            background: var(--glass); border: 1px solid var(--border); 
+            padding: 40px; position: relative; overflow: hidden; 
+            backdrop-filter: blur(15px); transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .card:hover { border-color: var(--cyan); transform: translateY(-5px); }
+        .card:hover { transform: translateY(-15px); border-color: var(--accent); background: rgba(0, 242, 255, 0.02); }
         
-        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .card-meta { font-family: var(--mono); font-size: 10px; color: #444; text-transform: uppercase; }
+        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .id-badge { font-family: var(--font-data); font-size: 0.6rem; color: #333; }
         .trust-score { text-align: right; }
-        .score-val { font-size: 1.4rem; font-weight: 800; color: var(--cyan); line-height: 1; }
-        .score-label { font-size: 9px; color: #444; font-weight: 600; text-transform: uppercase; }
+        .score-num { font-family: var(--font-elite); font-size: 2.2rem; color: var(--accent); line-height: 1; }
+        .score-label { font-family: var(--font-data); font-size: 0.5rem; color: #444; text-transform: uppercase; }
 
-        .card h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
-        .card p { font-size: 0.8rem; color: #6d7d85; line-height: 1.6; margin-bottom: 20px; font-weight: 400; height: 38px; overflow: hidden; }
+        .card h2 { font-family: var(--font-elite); font-size: 1.6rem; margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase; }
+        .card p { font-size: 0.9rem; color: #666; line-height: 1.7; margin-bottom: 30px; font-weight: 300; height: 60px; overflow: hidden; }
 
-        /* Credo Style Metrics Bars */
-        .metric-item { margin-bottom: 12px; }
-        .metric-info { display: flex; justify-content: space-between; font-size: 9px; color: #444; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-        .bar-bg { height: 2px; width: 100%; background: #111; border-radius: 2px; overflow: hidden; }
-        .bar-fill { height: 100%; background: var(--cyan); transition: 1.5s ease-out; }
+        /* Credo AI style Metrics */
+        .metric-row { margin-bottom: 15px; }
+        .metric-info { display: flex; justify-content: space-between; font-family: var(--font-data); font-size: 0.6rem; color: #444; margin-bottom: 5px; }
+        .bar-bg { height: 2px; width: 100%; background: #111; }
+        .bar-fill { height: 100%; background: var(--accent); transition: 2s cubic-bezier(0.1, 1, 0.1, 1); }
 
-        .card-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .cat-tag { font-size: 9px; font-weight: 700; color: var(--cyan); text-transform: uppercase; }
+        .card-footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .category-tag { font-family: var(--font-data); font-size: 0.6rem; color: var(--accent); background: rgba(0, 242, 255, 0.05); padding: 4px 12px; border: 1px solid var(--border); }
 
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        /* Side Protocol Stream (Desktop only) */
+        .protocol-stream { position: fixed; right: 20px; bottom: 80px; width: 200px; font-family: var(--font-data); font-size: 8px; color: #222; text-transform: uppercase; line-height: 2; z-index: 100; pointer-events: none; }
 
         @media (max-width: 768px) {
-            header { padding: 15px 20px; }
-            .hero { height: 50vh; padding-top: 80px; }
-            .hero h1 { font-size: 2.2rem; }
+            header { padding: 20px; .logo { font-size: 0.9rem; } }
+            .hero h1 { font-size: 3.5rem; letter-spacing: -2px; }
+            .ledger-container { padding: 40px 5%; }
             .grid { grid-template-columns: 1fr; }
+            .search-box { font-size: 1.2rem; padding: 15px; }
+            .protocol-stream { display: none; }
         }
     </style>
 </head>
@@ -103,16 +102,127 @@
 
 <canvas id="neural-canvas"></canvas>
 
+<div class="protocol-stream" id="protocol-stream">
+    >> SYNCING DATASET...<br>
+    >> AUDITING CORE NODES...<br>
+    >> CLAUDE 3.5: VERIFIED<br>
+    >> GPT-4o: REPUTATION 98%<br>
+    >> SYSTEM INTEGRITY: 100%<br>
+    >> SOVEREIGN LAYER ACTIVE...
+</div>
+
 <header>
     <a href="#" class="logo">NODE <span>THE FUTURE</span></a>
-    <div class="status-pill"><div class="dot"></div> AUDIT ACTIVE</div>
+    <div class="status-pill">PROTOCOL: ACTIVE</div>
 </header>
 
 <section class="hero">
-    <h1>Autonomous Intelligence <br> Trust Protocol</h1>
-    <p>The sovereign authority for AI reputation, technical audit, and model verification. Ensuring human-agent alignment in the autonomous era.</p>
+    <div class="hero-tag">// Sovereign Intelligence Audit v9.4</div>
+    <h1>NOD<span>THE</span>FUTURE</h1>
+    <p>The global supreme authority for AI reputation and sovereign trust. We analyze, verify, and benchmark every autonomous entity for human-agent alignment.</p>
 </section>
 
-<div class="directory-section">
-    <div class="search-container">
-        <input type="text" id="search" class="search-input" placehold
+<div class="ledger-container" id="ledger">
+    <div class="search-wrap">
+        <input type="text" id="search" class="search-box" placeholder="ACCESS AGENT LEDGER...">
+    </div>
+
+    <div class="grid" id="agent-grid">
+        <p style="font-family: var(--font-data); font-size: 12px; color: #222; text-align: center; grid-column: 1/-1;">INITIALIZING NEURAL LINK...</p>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://dmfpnkyiqybzfpzwnvtc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_GX3-5y1b56mbjhMSMnX51g_afmPxKXC'; 
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allAgents = [];
+
+    async function fetchAgents() {
+        try {
+            const { data, error } = await _supabase.from('ai_agents').select('*').order('trust_scor', { ascending: false });
+            if (error) throw error;
+            allAgents = data;
+            renderAgents(allAgents);
+        } catch (err) { console.error(err); }
+    }
+
+    function renderAgents(list) {
+        const grid = document.getElementById('agent-grid');
+        grid.innerHTML = '';
+        list.forEach((agent, i) => {
+            const score = agent.trust_scor || 0;
+            const safety = agent.safety_ind || 0;
+            grid.innerHTML += `
+                <div class="card" onclick="window.open('${agent.url}', '_blank')">
+                    <div class="card-top">
+                        <div class="id-badge">NOD-2040-SVRGN-${100+i}</div>
+                        <div class="trust-score">
+                            <div class="score-num">${score}</div>
+                            <div class="score-label">Trust Index</div>
+                        </div>
+                    </div>
+                    <h2>${agent.name}</h2>
+                    <p>${agent.description || 'Behavioral pattern analysis ongoing. Safety markers verified by NOD Sovereign Protocol.'}</p>
+                    
+                    <div class="metric-row">
+                        <div class="metric-info"><span>Safety Alignment</span><span>${safety}%</span></div>
+                        <div class="bar-bg"><div class="bar-fill" style="width: ${safety}%"></div></div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-info"><span>Transparency Score</span><span>${Math.floor(score * 0.9)}%</span></div>
+                        <div class="bar-bg"><div class="bar-fill" style="width: ${Math.floor(score * 0.9)}%; background: #7b61ff;"></div></div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="category-tag">${agent.category}</div>
+                        <div style="font-family: var(--font-data); font-size: 8px; color: #222;">VERIFIED AUDIT</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    document.getElementById('search').addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        renderAgents(allAgents.filter(a => a.name.toLowerCase().includes(val)));
+    });
+
+    // Elite Three.js Background
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('neural-canvas'), alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const starGeo = new THREE.BufferGeometry();
+    const starCoords = [];
+    for (let i = 0; i < 4000; i++) {
+        starCoords.push(THREE.MathUtils.randFloatSpread(1500), THREE.MathUtils.randFloatSpread(1500), THREE.MathUtils.randFloatSpread(1500));
+    }
+    starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0x00f2ff, size: 1.2, transparent: true, opacity: 0.5 });
+    const stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
+    camera.position.z = 800;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        stars.rotation.y += 0.0004;
+        stars.rotation.x += 0.0002;
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.onresize = () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    };
+
+    window.onload = fetchAgents;
+</script>
+
+</body>
+</html>
