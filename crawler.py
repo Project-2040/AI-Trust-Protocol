@@ -4,11 +4,10 @@ import random
 import asyncio
 from datetime import datetime
 from playwright.async_api import async_playwright
-from playwright_stealth import stealth_async  # Corrected import for async stealth
+import playwright_stealth  # মডিউল হিসেবে ইমপোর্ট করছি
 from supabase import create_client, Client
 
 # --- SETUP ---
-# নিশ্চিত করুন যে আপনার এনভায়রনমেন্টে এই ভেরিয়েবলগুলো সেট করা আছে
 PROJECT_URL = os.environ.get("PROJECT_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
@@ -35,7 +34,6 @@ async def save_to_db(name, url, desc, category, img_url):
             "source": "FutureTools",
             "is_verified": True
         }
-        # Supabase upsert will update if 'url' already exists (Assuming 'url' is unique)
         supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
         print(f"  ✓ Saved: {name}")
         return True
@@ -45,24 +43,28 @@ async def save_to_db(name, url, desc, category, img_url):
 
 async def run_god_crawler():
     async with async_playwright() as p:
-        # Headless mode set to True for GitHub Actions/Server
         browser = await p.chromium.launch(headless=True) 
         context = await browser.new_context(user_agent=random.choice(USER_AGENTS))
         page = await context.new_page()
         
-        # Use stealth_async to avoid 'module object is not callable' error
-        await stealth_async(page)
+        # --- Stealth Fix: সব ভার্সনের জন্য নিরাপদ পদ্ধতি ---
+        try:
+            # প্রথমে stealth_async চেষ্টা করবে, না হলে সাধারণ stealth ব্যবহার করবে
+            if hasattr(playwright_stealth, 'stealth_async'):
+                await playwright_stealth.stealth_async(page)
+            else:
+                await playwright_stealth.stealth_async(page) if hasattr(playwright_stealth, 'stealth_async') else playwright_stealth.stealth(page)
+        except Exception as e:
+            print(f"⚠️ Stealth warning: {e}. Continuing without stealth...")
 
-        print(f"[{datetime.now().isoformat()}] 🚀 Scraping Mode: God Level (Images Enabled)")
+        print(f"[{datetime.now().isoformat()}] 🚀 Scraping Mode: God Level")
 
         try:
-            # Navigate to the website
             await page.goto("https://www.futuretools.io/", wait_until="networkidle", timeout=90000)
             
-            # --- Smart Scrolling to load all lazy-loaded images and content ---
             print("📜 Scrolling to load tools...")
             last_height = await page.evaluate("document.body.scrollHeight")
-            for i in range(10): # Scroll 10 times to get a good amount of tools
+            for i in range(10):
                 await page.mouse.wheel(0, 1500)
                 await asyncio.sleep(1.5)
                 new_height = await page.evaluate("document.body.scrollHeight")
@@ -70,46 +72,39 @@ async def run_god_crawler():
                     break
                 last_height = new_height
 
-            # Flexible selectors to find tool cards
             cards = await page.query_selector_all('.w-dyn-item, [class*="tool-card"], .tool-card-component')
             print(f"🔍 Found {len(cards)} potential tools. Syncing with Supabase...")
 
             count = 0
             for card in cards:
                 try:
-                    # Extract Name
                     name_el = await card.query_selector('h3, .tool-name-text, [class*="name"]')
                     name = await name_el.inner_text() if name_el else ""
                     
-                    # Extract Link
                     link_el = await card.query_selector('a')
                     href = await link_el.get_attribute('href') if link_el else ""
                     if href and not href.startswith('http'):
                         href = "https://www.futuretools.io" + href
 
-                    # Extract Image (Check src and data-src for lazy loading)
                     img_el = await card.query_selector('img')
                     img_url = ""
                     if img_el:
                         img_url = await img_el.get_attribute('src') or await img_el.get_attribute('data-src')
 
-                    # Extract Description
                     desc_el = await card.query_selector('.tool-description-text, p, [class*="description"]')
                     desc = await desc_el.inner_text() if desc_el else ""
                     
-                    # Extract Category
                     cat_el = await card.query_selector('.category-link, .tag-text, [class*="category"]')
                     category = await cat_el.inner_text() if cat_el else "AI Tool"
 
                     if name and href and len(name) > 2:
-                        # Basic filter to avoid unwanted entries
                         if any(x in name.lower() for x in ["submit", "news", "video"]): 
                             continue
                         
                         if await save_to_db(name, href, desc, category, img_url):
                             count += 1
                         
-                        if count >= 50: # Limit to 50 tools per run
+                        if count >= 50:
                             break 
 
                 except Exception:
