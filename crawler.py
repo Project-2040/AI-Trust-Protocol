@@ -4,17 +4,24 @@ import random
 import asyncio
 from datetime import datetime
 from playwright.async_api import async_playwright
-from playwright_stealth import stealth
+from playwright_stealth import stealth_async  # Corrected import for async stealth
 from supabase import create_client, Client
 
 # --- SETUP ---
+# নিশ্চিত করুন যে আপনার এনভায়রনমেন্টে এই ভেরিয়েবলগুলো সেট করা আছে
 PROJECT_URL = os.environ.get("PROJECT_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+if not PROJECT_URL or not SUPABASE_KEY:
+    print("❌ Error: PROJECT_URL or SUPABASE_KEY not found in environment variables!")
+    exit(1)
+
 supabase: Client = create_client(PROJECT_URL, SUPABASE_KEY)
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 ]
 
 async def save_to_db(name, url, desc, category, img_url):
@@ -28,7 +35,7 @@ async def save_to_db(name, url, desc, category, img_url):
             "source": "FutureTools",
             "is_verified": True
         }
-        # Supabase execute() typically returns a response, ensure it's handled
+        # Supabase upsert will update if 'url' already exists (Assuming 'url' is unique)
         supabase.table('ai_agents').upsert(data, on_conflict='url').execute()
         print(f"  ✓ Saved: {name}")
         return True
@@ -38,67 +45,74 @@ async def save_to_db(name, url, desc, category, img_url):
 
 async def run_god_crawler():
     async with async_playwright() as p:
-        # Headless=False দিয়ে চেক করুন যদি ব্লক করে তবে
+        # Headless mode set to True for GitHub Actions/Server
         browser = await p.chromium.launch(headless=True) 
         context = await browser.new_context(user_agent=random.choice(USER_AGENTS))
         page = await context.new_page()
-        await stealth(page)
+        
+        # Use stealth_async to avoid 'module object is not callable' error
+        await stealth_async(page)
 
-        print(f"[{datetime.now().isoformat()}] 🚀 Scraping Mode: Enhanced Level")
+        print(f"[{datetime.now().isoformat()}] 🚀 Scraping Mode: God Level (Images Enabled)")
 
         try:
-            # wait_until="domcontentloaded" ব্যবহার করা নিরাপদ
-            await page.goto("https://www.futuretools.io/", wait_until="domcontentloaded", timeout=90000)
+            # Navigate to the website
+            await page.goto("https://www.futuretools.io/", wait_until="networkidle", timeout=90000)
             
-            # --- স্মার্ট স্ক্রলিং (যতক্ষণ নতুন কন্টেন্ট লোড হয়) ---
+            # --- Smart Scrolling to load all lazy-loaded images and content ---
+            print("📜 Scrolling to load tools...")
             last_height = await page.evaluate("document.body.scrollHeight")
-            while True:
-                await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                await asyncio.sleep(2) # লোড হওয়ার জন্য সময় দিন
+            for i in range(10): # Scroll 10 times to get a good amount of tools
+                await page.mouse.wheel(0, 1500)
+                await asyncio.sleep(1.5)
                 new_height = await page.evaluate("document.body.scrollHeight")
                 if new_height == last_height:
                     break
                 last_height = new_height
-                # খুব বেশি স্ক্রল হলে ব্রেক করুন (অপশনাল)
-                if last_height > 20000: break 
 
-            # কার্ড সিলেকটর আপডেট করা হয়েছে (বেশি জেনেরিক করা হয়েছে)
-            cards = await page.query_selector_all('div[class*="tool-card"], .w-dyn-item')
+            # Flexible selectors to find tool cards
+            cards = await page.query_selector_all('.w-dyn-item, [class*="tool-card"], .tool-card-component')
             print(f"🔍 Found {len(cards)} potential tools. Syncing with Supabase...")
 
             count = 0
             for card in cards:
                 try:
-                    # টেক্সট এক্সট্রাকশনের জন্য try-except ব্লক
-                    name_el = await card.query_selector('h3, [class*="name"]')
+                    # Extract Name
+                    name_el = await card.query_selector('h3, .tool-name-text, [class*="name"]')
                     name = await name_el.inner_text() if name_el else ""
                     
+                    # Extract Link
                     link_el = await card.query_selector('a')
                     href = await link_el.get_attribute('href') if link_el else ""
                     if href and not href.startswith('http'):
                         href = "https://www.futuretools.io" + href
 
-                    # ইমেজ ইউআরএল-এর জন্য 'src' এবং 'data-src' চেক করুন (Lazy loading-এর জন্য)
+                    # Extract Image (Check src and data-src for lazy loading)
                     img_el = await card.query_selector('img')
                     img_url = ""
                     if img_el:
                         img_url = await img_el.get_attribute('src') or await img_el.get_attribute('data-src')
 
-                    desc_el = await card.query_selector('p, [class*="description"]')
+                    # Extract Description
+                    desc_el = await card.query_selector('.tool-description-text, p, [class*="description"]')
                     desc = await desc_el.inner_text() if desc_el else ""
                     
-                    cat_el = await card.query_selector('a[class*="category"], .tag-text')
+                    # Extract Category
+                    cat_el = await card.query_selector('.category-link, .tag-text, [class*="category"]')
                     category = await cat_el.inner_text() if cat_el else "AI Tool"
 
                     if name and href and len(name) > 2:
-                        if any(x in name.lower() for x in ["submit", "news", "video"]): continue
+                        # Basic filter to avoid unwanted entries
+                        if any(x in name.lower() for x in ["submit", "news", "video"]): 
+                            continue
                         
                         if await save_to_db(name, href, desc, category, img_url):
                             count += 1
                         
-                        if count >= 50: break 
+                        if count >= 50: # Limit to 50 tools per run
+                            break 
 
-                except Exception as e:
+                except Exception:
                     continue
 
             print(f"\n✅ All set! {count} AI tools are now live in your database.")
